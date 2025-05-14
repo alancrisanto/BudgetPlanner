@@ -6,3 +6,7 @@ Veihi Tupai
 Cameron Pedro
 Alan Crisanto
 Bamutesiza Ronald
+
+## Quotes
+
+- Alan Crisanto: "*We cannot become what we want by remaining what we are*"
