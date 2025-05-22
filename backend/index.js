@@ -8,15 +8,25 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-const authRoutes = require('./routes/auth');
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
+
+const authRoutes = require('./routes/auth');
+const accountRoutes = require('./routes/accounts');
+const transactionRoutes = require('./routes/transactions');
+const categoryRoutes = require('./routes/categories');
+const tagRoutes = require('./routes/tags');
+
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Serve static frontend from /frontend/dist
 const frontendPath = path.join(__dirname, '../frontend/dist');
