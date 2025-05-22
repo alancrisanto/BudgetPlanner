@@ -1,25 +1,32 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { registerRequest } from '../api/auth';
 
 function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors }
+  } = useForm();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle registration logic here
-    if (password !== confirmPassword) {
+  const onSubmit = async (data) => {
+    if (data.password !== data.confirmPassword) {
       alert('Passwords do not match');
       return;
+    } else {
+      const res = await registerRequest(data)
+      console.log(res)
+      
     }
-    // Submit registration data
+
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="email">
               Email
@@ -28,12 +35,12 @@ function Register() {
               id="email"
               type="email"
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register('email', { required: true})}
               autoComplete="email"
-              maxLength={55}
             />
+            {errors.email && (
+              <span className="text-red-500 text-xs">Email is required</span>
+            )}
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="password">
@@ -43,12 +50,12 @@ function Register() {
               id="password"
               type="password"
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register('password', { required: true })}
               autoComplete="new-password"
-              maxLength={255}
             />
+            {errors.password && (
+              <span className="text-red-500 text-xs">Password is required</span>
+            )}
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="confirmPassword">
@@ -58,12 +65,15 @@ function Register() {
               id="confirmPassword"
               type="password"
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              {...register('confirmPassword', {
+                required: true,
+                validate: value => value === watch('password') || 'Passwords do not match'
+              })}
               autoComplete="new-password"
-              maxLength={255}
             />
+            {errors.confirmPassword && (
+              <span className="text-red-500 text-xs">{errors.confirmPassword.message || 'Confirm your password'}</span>
+            )}
           </div>
           <button
             type="submit"
