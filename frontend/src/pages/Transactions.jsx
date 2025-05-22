@@ -131,6 +131,23 @@ function Transactions() {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this transaction?')) {
+            try {
+                await axios.delete(`http://localhost:5001/api/transactions/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                console.log("Transaction deleted:", id);
+            } catch (err) {
+                console.error('Error deleting transaction:', err);
+                setError(err);
+            }
+            setTransactions(transactions.filter(transaction => transaction._id !== id));
+        }
+    };
+
     if (loading) {
         return <div className="p-4">Loading...</div>;
     }
