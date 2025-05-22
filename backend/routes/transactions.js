@@ -7,7 +7,7 @@ const {
     getTransactions,
     createTransaction,
     deleteTransaction
-} = require('../controllers/transactionController');
+} = require('../controllers/TransactionController');
 
 function calculateNextDate(current, frequency) {
     const d = new Date(current);
