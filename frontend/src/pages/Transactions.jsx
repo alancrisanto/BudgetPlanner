@@ -20,8 +20,8 @@ function Transactions() {
 
     // const accountId = localStorage.getItem('account_id');
     // hardcoded for now
-    const accountId = '682ed17f3623f7a5b0beac05';
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MmRjZjcxMzMxYTEwMDQzNTE4MDY5ZCIsImlhdCI6MTc0NzkwOTk5NCwiZXhwIjoxNzQ3OTk2Mzk0fQ.-V7uaXwJ2Aemcs7QXGwbL8pVjTFDfEVagV436p26ndM'
+    const accountId = import.meta.env.VITE_ACCOUNT_ID;
+    const token = import.meta.env.VITE_TOKEN;
     
     const [showModal, setShowModal] = useState(false);
     const openModal = (transaction = null) => {
