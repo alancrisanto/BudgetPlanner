@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PrivateRoute from "./PrivateRoute";
 
 function App() {
 	return (
@@ -16,8 +17,10 @@ function App() {
 				<div className="p-4">
 					<Routes>
 						<Route path="/" element={<Home />} />
-						<Route path="/dashboard" element={<Dashboard />} />
-						<Route path="/accounts" element={<Accounts />} />
+						<Route element={<PrivateRoute />}>
+							<Route path="/dashboard" element={<Dashboard />} />
+							<Route path="/accounts" element={<Accounts />} />
+						</Route>
 						<Route path="/login" element={<Login />} />
 						<Route path="/register" element={<Register />} />
 					</Routes>
