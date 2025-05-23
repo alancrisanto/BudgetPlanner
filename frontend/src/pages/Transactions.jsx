@@ -233,8 +233,10 @@ function Transactions() {
         <div className="space-y-4">
         {transactions.map(transaction => {
             const matchedCategory = categories.find(
-            cat => String(cat._id) === String(transaction.category_id)
+            category => String(category._id) === String(transaction.category_id._id)
             );
+            console.log("Matched category:", matchedCategory);
+            console.log("Transaction:", transaction);
             // Determine the arrow direction and color based on transaction type
             const isIncome = transaction.type === 'income';
             const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
