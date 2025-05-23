@@ -19,6 +19,9 @@ function Transactions() {
         category_id: ''
     });
     const [editTransaction, setEditTransaction] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const closeDeleteModal = () => setShowDeleteModal(false);
+    const [deleteTransaction, setDeleteTransaction] = useState(null);
 
     // const accountId = localStorage.getItem('account_id');
     // hardcoded for now
@@ -156,20 +159,26 @@ function Transactions() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this transaction?')) {
-            try {
-                await axios.delete(`${VITE_API_URL}/api/transactions/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log("Transaction deleted:", id);
-            } catch (err) {
-                console.error('Error deleting transaction:', err);
-                setError(err);
-            }
-            setTransactions(transactions.filter(transaction => transaction._id !== id));
+    const confirmDelete = (transaction_id) => {
+        setDeleteTransaction(transaction_id)
+        setShowDeleteModal(true);
+    }
+
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`${VITE_API_URL}/api/transactions/${deleteTransaction}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setTransactions(transactions.filter(transaction => transaction._id !== deleteTransaction));
+            console.log("Transaction deleted:", deleteTransaction);
+        } catch (err) {
+            console.error('Error deleting transaction:', err);
+            setError(err);
+        } finally {
+        setDeleteTransaction(null);
+        setShowDeleteModal(false);
         }
     };
 
@@ -262,7 +271,7 @@ function Transactions() {
                     <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
                         <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDelete(transaction._id)} className="hover:text-red-700" title="Delete">
+                    <button onClick={() => confirmDelete(transaction._id)} className="hover:text-red-700" title="Delete">
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -317,6 +326,17 @@ function Transactions() {
                 Save
                 </button>
             </form>
+        </Modal>
+
+        <Modal isOpen={showDeleteModal} title="Confirm Deletion" onClose={closeDeleteModal}>
+            <div className="space-y-4">
+                <p>Are you sure you want to delete this transaction? This action cannot be undone.</p>
+                <div className="flex justify-end gap-4">
+                    <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        Delete
+                    </button>
+                </div>
+            </div>
         </Modal>
     </div>
     );
