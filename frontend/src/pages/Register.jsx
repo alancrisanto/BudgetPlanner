@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
 	const {
@@ -10,7 +10,7 @@ function Register() {
 		watch,
 		formState: { errors },
 	} = useForm();
-	const { signup, isAuthenticated, errors: registerErrors, setErrors } = useAuth();
+	const { signup, isAuthenticated, errors: registerErrors } = useAuth();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -18,15 +18,6 @@ function Register() {
 			navigate("/dashboard");
 		}
 	}, [isAuthenticated]);
-
-	useEffect(() => {
-		if (registerErrors) {
-			const timer = setTimeout(() => {
-				setErrors(null);
-			}, 3000);
-			return () => clearTimeout(timer);
-		}
-	}, [registerErrors, setErrors]);
 
 	const onSubmit = async (data) => {
 		const { email, password } = data;
@@ -101,6 +92,7 @@ function Register() {
 						Register
 					</button>
 				</form>
+				<p className="text-sm text-gray-600">Already have an account? <Link className='text-blue-500' to="/login" >Login here</Link></p>
 			</div>
 		</div>
 	);
