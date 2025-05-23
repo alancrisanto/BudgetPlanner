@@ -14,7 +14,10 @@ export const registerRequest = async (userData) => {
 export const loginRequest = async (userData) => {
   const response = await axios.post(API_URL + 'login', userData);
   if (response.data) {
-    localStorage.setItem('user', JSON.stringify(response.data.user.email));
+    localStorage.setItem('user', JSON.stringify({
+      email: response.data.user.email,
+      token: response.data.token
+    }));
   }
   return response.data;
 }
