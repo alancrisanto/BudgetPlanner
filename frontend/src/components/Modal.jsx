@@ -28,7 +28,7 @@ const Modal = ({ isOpen, onClose, children, title = "Modal" }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50" onClick={handleOverlayClick}>
+        <div className="fixed inset-0 bg-black/40 backdrop-sm flex items-center justify-center z-50" onClick={handleOverlayClick}>
             <div className="relative bg-white p-6 rounded shadow-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-2 right-2 text-black hover:text-2xl rounded-full w-8 h-8 flex items-center justify-center"aria-label="Close">
                     &times;

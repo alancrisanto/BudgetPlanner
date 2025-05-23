@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+
 function Transactions() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -53,12 +55,13 @@ function Transactions() {
             try {
                 // const token = localStorage.getItem('token');
 
-                const response = await axios.get(`http://localhost:5001/api/transactions`, {
+                const response = await axios.get(`${VITE_API_URL}/api/transactions`, {
                 params: { account_id: accountId },
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
                 });
+
                 setTransactions(response.data);
             } catch (err) {
                 setError(err);
@@ -69,7 +72,7 @@ function Transactions() {
 
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`http://localhost:5001/api/categories`, {
+                const response = await axios.get(`${VITE_API_URL}/api/categories`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -87,10 +90,32 @@ function Transactions() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validate form data
+        if (!formData.type || !formData.date || !formData.name || !formData.amount || !formData.category_id) {
+            alert('Please fill in all fields.');
+            return;
+        }
+        if (isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
+            alert('Please enter a valid amount.');
+            return;
+        }
+        if (new Date(formData.date) > new Date()) {
+            alert('Date cannot be in the future.');
+            return;
+        }
+        if (formData.category_id === '') {
+            alert('Please select a category.');
+            return;
+        }
+        if (formData.type !== 'income' && formData.type !== 'expense') {
+            alert('Please select a valid transaction type.');
+            return;
+        }
+
         try {
             if (editTransaction) {
                 // Update transaction
-                const response = await axios.put(`http://localhost:5001/api/transactions/${editTransaction._id}`, {
+                const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`, {
                     ...formData,
                     account_id: accountId,
                     amount: parseFloat(formData.amount),
@@ -103,7 +128,7 @@ function Transactions() {
                 setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? response.data : transaction));
             } else {
                 // Create new transaction
-                const response = await axios.post(`http://localhost:5001/api/transactions`, {
+                const response = await axios.post(`${VITE_API_URL}/api/transactions`, {
                     ...formData,
                     account_id: accountId,
                     amount: parseFloat(formData.amount),
@@ -134,7 +159,7 @@ function Transactions() {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this transaction?')) {
             try {
-                await axios.delete(`http://localhost:5001/api/transactions/${id}`, {
+                await axios.delete(`${VITE_API_URL}/api/transactions/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -159,73 +184,101 @@ function Transactions() {
     }
 
     return (
-        <div className='p-6'>
-            <h1 className='text-2xl font-semibold mb-4'>Transactions</h1>
-            <div className="flex justify-between mb-4">
-                <div className="flex items-center">
-                    <label htmlFor="filter" className="mr-2">Filter:</label>
-                    <select id="filter" className="border border-gray-300 rounded p-2">
-                        <option value="">All</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                </div>
-                <div className="flex items-center">
-                    <label htmlFor="sort" className="mr-2">Sort by:</label>
-                    <select id="sort" className="border border-gray-300 rounded p-2">
-                        <option value="date">Date</option>
-                        <option value="amount">Amount</option>
-                        <option value="category">Category</option>
-                    </select>
-                </div>
-                <div className="flex items-center">
-                    <label htmlFor="search" className="mr-2">Search:</label>        
-                    <input type="text" id="search" className="border border-gray-300 rounded p-2" placeholder="Search transactions..." />
-                </div>
-                <button onClick={() => openModal()} className="bg-blue-500 text-white rounded p-2 ml-4">Add Transaction</button>
+        <div className="p-6">
+            <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+
+            {/* Filter by type: income or expense */}
+            <div className="flex items-center gap-2">
+                <label htmlFor="filter" className="text-sm font-medium text-gray-700">Filter:</label>
+                <select id="filter" className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="">All</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
             </div>
-            <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-200 text-left text-sm">
-                    <thead className="bg-gray-100 text-gray-700 uppercase font-semibold">
-                        <tr>
-                            <th className="px-4 py-2 ">Type</th>
-                            <th className="px-4 py-2 ">Date</th>
-                            <th className="px-4 py-2 ">Name</th>
-                            <th className="px-4 py-2 ">Amount</th>
-                            <th className="px-4 py-2 ">Category</th>
-                            <th className="px-4 py-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {transactions.map(transaction => (
-                            <tr key={transaction.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 ">{transaction.type}</td>
-                                <td className="px-4 py-2 ">{new Date(transaction.date).toLocaleDateString()}</td>
-                                <td className="px-4 py-2 ">{transaction.name}</td>
-                                <td className="px-4 py-2 ">{transaction.amount}</td>
-                                <td className="px-4 py-2 ">{transaction.category}</td>
-                                <td className="px-4 py-2">
-                                    <div className="flex gap-4">
-                                        <button onClick={() => openModal(transaction)} className="text-blue-500 hover:text-blue-800">
-                                        <Pencil size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(transaction._id)} className="text-red-500 hover:text-red-800">
-                                        <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+
+            {/* Sort by amount or date */}
+            <div className="flex items-center gap-2">
+                <label htmlFor="sort" className="text-sm font-medium text-gray-700">Sort by:</label>
+                <select id="sort" className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    <option value="date">Date</option>
+                    <option value="amount">Amount</option>
+                    <option value="category">Category</option>
+                </select>
             </div>
+
+            {/* Search */}
+            <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
+                <label htmlFor="search" className="text-sm font-medium text-gray-700">Search:</label>
+                <input type="text" id="search" placeholder="Search transactions..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"/>
+            </div>
+
+            {/* Add button */}
+            <button onClick={() => openModal()} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
+                Add Transaction
+            </button>
+        </div>
+
+        {/* Transaction list */}
+        <div className="space-y-4">
+        {transactions.map(transaction => {
+            const matchedCategory = categories.find(
+            cat => String(cat._id) === String(transaction.category_id)
+            );
+            // Determine the arrow direction and color based on transaction type
+            const isIncome = transaction.type === 'income';
+            const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
+            const arrow = isIncome ? '↑' : '↓';
+            // Format the date
+            const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            });
+
+        return (
+            
+            <div key={transaction._id} className="flex justify-between items-start p-4 bg-white rounded-2xl shadow-md">
+                {/* Left arrow icon */}
+                <div className="flex flex-col items-center mr-4">
+                    <div className={`text-2xl font-bold ${arrowColor}`}>{arrow}</div>
+                </div>
+                {/* Transaction name and category */}
+                <div className="flex-1">
+                    <div className="text-lg font-semibold">{transaction.name}</div>
+                    <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
+                </div>
+                {/* Amount and date */}
+                <div className="flex items-center gap-4 pl-4">
+                <div className="text-right">
+                    <div className="text-lg font-semibold">
+                    {isIncome ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-500">{formattedDate}</div>
+                </div>
+                {/* Edit and delete buttons */}
+                <div className="flex flex-col items-center space-y-2">
+                    <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
+                        <Pencil size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(transaction._id)} className="hover:text-red-700" title="Delete">
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+                </div>
+            </div>
+        );
+        })}
+        </div>
 
         <Modal isOpen={showModal} onClose={closeModal} title={editTransaction ? "Edit Transaction" : "Add Transaction"}>
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Type</label>
                     <select className="w-full border border-gray-300 rounded p-2"
-                        value={formData.type} onChange={(e) => setFormData({...formData, type:e.target.value})}>
+                        value={formData.type} onChange={(e) => setFormData({...formData, type:e.target.value})}
+                        required>
                         <option value="expense">Expense</option>
                         <option value="income">Income</option>
                     </select>
@@ -233,23 +286,27 @@ function Transactions() {
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Date</label>
                     <input className="w-full border border-gray-300 rounded p-2" type="date" 
-                        value={formData.date} onChange={(e) => setFormData({...formData, date:e.target.value})}/>
+                        value={formData.date} onChange={(e) => setFormData({...formData, date:e.target.value})}
+                        required/>
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Name</label>
                     <input className="w-full border border-gray-300 rounded p-2" type="text" 
-                        value={formData.name} onChange={(e) => setFormData({...formData, name:e.target.value})}/>
+                        value={formData.name} onChange={(e) => setFormData({...formData, name:e.target.value})}
+                        required/>
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Amount</label>
                     <input className="w-full border border-gray-300 rounded p-2"
-                        value={formData.amount} onChange={(e) => setFormData({...formData, amount:e.target.value})} type="number" step="0.01" />
+                        value={formData.amount} onChange={(e) => setFormData({...formData, amount:e.target.value})} type="number" step="0.01" 
+                        required/>
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Category</label>
                     <select className="w-full border border-gray-300 rounded p-2"
                         value={formData.category_id}
-                        onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}>
+                        onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                        required>
                         <option value="">Select Category</option>
                         {categories.map(category => (
                             <option key={category._id} value={category._id}>{category.name}</option>
