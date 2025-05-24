@@ -13,6 +13,7 @@ import Transactions from './pages/Transactions';
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <div className="flex">
         <NavBar />
@@ -21,14 +22,19 @@ function App() {
           <main className="mt-16 ml-64 p-6">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/accounts" element={<Accounts />} />
+              <Route element={<PrivateRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/accounts" element={<Accounts />} />
+              </Route>
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/login" element={<Login />} />
+						  <Route path="/register" element={<Register />} /> 
             </Routes>
           </main>
         </div>
       </div>
     </Router>
+    </AuthProvider>
   );
 }
 
