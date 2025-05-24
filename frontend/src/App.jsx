@@ -5,6 +5,8 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Transactions from './pages/Transactions';
 
 function App() {
