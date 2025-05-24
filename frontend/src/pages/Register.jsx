@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -10,20 +9,17 @@ function Register() {
 		watch,
 		formState: { errors },
 	} = useForm();
-	const { signup, isAuthenticated, errors: registerErrors } = useAuth();
+	const { signup, errors: registerErrors } = useAuth();
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (isAuthenticated) {
-			navigate("/dashboard");
-		}
-	}, [isAuthenticated]);
 
 	const onSubmit = async (data) => {
 		const { email, password } = data;
 		const userData = { email, password };
 		try {
-			await signup(userData);
+			const res =await signup(userData);
+			if (res && res.status === 201) {
+				navigate("/login");
+			}
 		} catch (error) {
 			console.error("Registration failed:", error);
 		}
