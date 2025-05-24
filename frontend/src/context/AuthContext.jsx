@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, use } from "react";
 import { registerRequest, loginRequest } from "../api/auth";
 
 export const AuthContext = createContext()
@@ -16,20 +16,19 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [errors, setErrors] = useState(null)
 
-  const signup = async (user) => {
+  const signup = async (userData) => {
     try {
-      const res = await registerRequest(user);
-      setUser( res )
-      setIsAuthenticated(true)
+      const res = await registerRequest(userData);
+      return res;
     } catch (error) {
       setErrors(error.response?.data?.message || "Registration failed");
+      throw error;
     }
   }
 
-  const signin = async (user) => {
-    console.log("signin user:", user)
+  const signin = async (userData) => {
     try {
-      const res = await loginRequest(user);
+      const res = await loginRequest(userData);
       setUser(res);
       setIsAuthenticated(true);
     } catch (error) {

@@ -1,15 +1,24 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from "../context/AuthContext";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const {signin, errors: signinErrors} = useAuth();
+  const {signin, isAuthenticated, errors: signinErrors} = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (isAuthenticated) {
+			navigate("/dashboard");
+		}
+	}, [isAuthenticated]);
 
 	const onSubmit = async (data) => {
+		console.log("signin data:", data);
 		try {
 			await signin(data);
-      console.log("signin data:", data);
+			console.log("login isauthenticated:", isAuthenticated);
 		} catch (error) {
 			console.error("Login failed:", error);
 		}
