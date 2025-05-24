@@ -10,17 +10,23 @@ exports.getAccounts = async (req, res) => {
 };
 
 exports.createAccount = async (req, res) => {
-    try {
-        const { name } = req.body;
-        const newAccount = await Account.create({
-            user_id: req.user.id,
-            name
-        });
-        res.status(201).json(newAccount);
-    } catch (err) {
-        res.status(500).json({ message: 'Error creating account', error: err.message });
-    }
+  try {
+    const { name, income_total, expense_total, remainder } = req.body;
+
+    const newAccount = await Account.create({
+      user_id: req.user.id,
+      name,
+      income_total: income_total || 0,
+      expense_total: expense_total || 0,
+      remainder: remainder || 0
+    });
+
+    res.status(201).json(newAccount);
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating account', error: err.message });
+  }
 };
+
 
 exports.deleteAccount = async (req, res) => {
     try {
