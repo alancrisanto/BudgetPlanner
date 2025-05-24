@@ -1,12 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import NavBar from './components/NavBar';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import NavBar from "./components/NavBar";
 import Header from './components/Header';
 
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import Accounts from './pages/Accounts';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import Accounts from "./pages/Accounts";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import PrivateRoute from "./PrivateRoute";
 import Transactions from './pages/Transactions';
 
 function App() {

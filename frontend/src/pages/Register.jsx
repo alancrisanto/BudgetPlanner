@@ -1,6 +1,7 @@
-import React from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { registerRequest } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
 	const {
@@ -9,12 +10,23 @@ function Register() {
 		watch,
 		formState: { errors },
 	} = useForm();
+	const { signup, isAuthenticated, errors: registerErrors } = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (isAuthenticated) {
+			navigate("/dashboard");
+		}
+	}, [isAuthenticated]);
 
 	const onSubmit = async (data) => {
-			const { email, password } = data;
-			const userData = { email, password };
-			const res = await registerRequest(userData);
-			console.log(res);
+		const { email, password } = data;
+		const userData = { email, password };
+		try {
+			await signup(userData);
+		} catch (error) {
+			console.error("Registration failed:", error);
+		}
 	};
 
 	return (
@@ -22,6 +34,13 @@ function Register() {
 			<div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
 				<h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
 				<form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+					<div>
+						{registerErrors && (
+							<span className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm my-4 shadow-sm">
+								{registerErrors}
+							</span>
+						)}
+					</div>
 					<div>
 						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="email">
 							Email
@@ -73,6 +92,7 @@ function Register() {
 						Register
 					</button>
 				</form>
+				<p className="text-sm text-gray-600">Already have an account? <Link className='text-blue-500' to="/login" >Login here</Link></p>
 			</div>
 		</div>
 	);
