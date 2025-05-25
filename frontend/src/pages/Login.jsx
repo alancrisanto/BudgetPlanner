@@ -15,7 +15,6 @@ function Login() {
 	}, [isAuthenticated]);
 
 	const onSubmit = async (data) => {
-		console.log("signin data:", data);
 		try {
 			await signin(data);
 			console.log("login isauthenticated:", isAuthenticated);

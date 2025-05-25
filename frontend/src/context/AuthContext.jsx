@@ -1,5 +1,5 @@
-import { createContext, useState, useContext, useEffect, use } from "react";
-import { registerRequest, loginRequest } from "../api/auth";
+import { createContext, useState, useContext, useEffect } from "react";
+import { registerRequest, loginRequest, verifyTokenRequest } from "../api/auth";
 
 export const AuthContext = createContext()
 
@@ -36,6 +36,28 @@ export const AuthProvider = ({ children }) => {
       setErrors(error.response?.data?.message || "Login failed");
     }
   }
+
+const checkAuth = async () => {
+  const localUser = JSON.parse(localStorage.getItem('user'));
+  if (!localUser?.token) return;
+
+  try {
+    const res = await verifyTokenRequest(localUser.token);
+    if (res.data.valid) {
+      setUser(localUser);
+      setIsAuthenticated(true);
+    } else {
+      localStorage.removeItem("user");
+    }
+  } catch (error) {
+    localStorage.removeItem("user");
+    throw error;
+  }
+};
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (errors) {
