@@ -18,3 +18,13 @@ export const loginRequest = async (userData) => {
   }
   return response.data;
 }
+
+export const verifyTokenRequest = async (token) => {
+  const response = await axios.get(API_URL + 'verify-token', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  console.log("verifyTokenRequest response", response);
+  return response;
+}
