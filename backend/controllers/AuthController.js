@@ -37,8 +37,6 @@ exports.login = async (req, res) => {
 };
 
 exports.verifyToken = (req, res) => {
-  console.log('Verify token request req:', req);
-  console.log('Verify token request headers:', req.headers);
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
 

@@ -25,6 +25,5 @@ export const verifyTokenRequest = async (token) => {
       Authorization: `Bearer ${token}`
     }
   });
-  console.log("verifyTokenRequest response", response);
   return response;
 }
