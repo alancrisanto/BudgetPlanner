@@ -20,7 +20,7 @@ function App() {
 					<NavBar />
 					<div className="flex-1">
 						<Header />
-						<main className="mt-16 ml-64 p-6">
+						<main className="mt-16 ml-64">
 							<Routes>
 								<Route path="/" element={<Home />} />
 								<Route element={<PrivateRoute />}>
