@@ -325,24 +325,36 @@ function Transactions() {
                         <option value="expense">Expense</option>
                         <option value="income">Income</option>
                     </select>
+                    {formErrors.type && (
+                        <span className="text-red-500 text-xs">{formErrors.type}</span>
+                    )}
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Date</label>
                     <input className="w-full border border-gray-300 rounded p-2" type="date" 
                         value={formData.date} onChange={(e) => setFormData({...formData, date:e.target.value})}
                         required/>
+                    {formErrors.date && (
+                        <span className="text-red-500 text-xs">{formErrors.date}</span>
+                    )}
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Name</label>
                     <input className="w-full border border-gray-300 rounded p-2" type="text" 
                         value={formData.name} onChange={(e) => setFormData({...formData, name:e.target.value})}
                         required/>
+                    {formErrors.name && (
+                        <span className="text-red-500 text-xs">{formErrors.name}</span>
+                    )}
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Amount</label>
                     <input className="w-full border border-gray-300 rounded p-2"
                         value={formData.amount} onChange={(e) => setFormData({...formData, amount:e.target.value})} type="number" step="0.01" 
                         required/>
+                    {formErrors.amount && (
+                        <span className="text-red-500 text-xs">{formErrors.amount}</span>
+                    )}
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Category</label>
@@ -355,6 +367,9 @@ function Transactions() {
                             <option key={category._id} value={category._id}>{category.name}</option>
                         ))}
                     </select>
+                    {formErrors.category_id && (
+                        <span className="text-red-500 text-xs">{formErrors.category_id}</span>
+                    )}
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Recurring</label>
@@ -373,6 +388,9 @@ function Transactions() {
                             <option value="monthly">Monthly</option>
                             <option value="yearly">Yearly</option>
                         </select>
+                        {formErrors.frequency && (
+                            <span className="text-red-500 text-xs">{formErrors.frequency}</span>
+                        )}
                     </div>
                 )}
                 { formData.recurring && (
@@ -381,11 +399,17 @@ function Transactions() {
                             <label className="block mb-1 font-medium">Next Date</label>
                             <input className="w-full border border-gray-300 rounded p-2" type="date"
                                 value={formData.next_date} onChange={(e) => setFormData({...formData, next_date:e.target.value})}/>
+                            {formErrors.next_date && (
+                            <span className="text-red-500 text-xs">{formErrors.next_date}</span>
+                        )}
                         </div>
                         <div className="mb-4">
                             <label className="block mb-1 font-medium">End Date</label>
                             <input className="w-full border border-gray-300 rounded p-2" type="date"
                                 value={formData.end_date} onChange={(e) => setFormData({...formData, end_date:e.target.value})}/>
+                            {formErrors.end_date && (
+                            <span className="text-red-500 text-xs">{formErrors.end_date}</span>
+                        )}
                         </div>
                     </>
                 )}
