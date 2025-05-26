@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -18,6 +18,7 @@ function Transactions() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [formErrors, setFormErrors] = useState({});
     const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({
         type: '',
@@ -32,10 +33,6 @@ function Transactions() {
     });
 
     const [editTransaction, setEditTransaction] = useState(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const closeDeleteModal = () => setShowDeleteModal(false);
-    const [deleteTransaction, setDeleteTransaction] = useState(null);
-    
     const [showModal, setShowModal] = useState(false);
     const openModal = (transaction = null) => {
         if (transaction) {
@@ -68,11 +65,49 @@ function Transactions() {
         setShowModal(true);
     }
     const closeModal = () => setShowModal(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const closeDeleteModal = () => setShowDeleteModal(false);
+    const [deleteTransaction, setDeleteTransaction] = useState(null);
 
-    const [formErrors, setFormErrors] = useState({});
-
+    const [filteredTransactions, setFilteredTransactions] = useState([]);
+    const [selectedFilter, setSelectedFilter] = useState('');
+    const [sortBy, setSortBy] = useState('');
+    
     useEffect(() => {
+        let filteredResult = [...transactions];
+        // Filter transactions based on selected filter
+        if (selectedFilter === 'income' || selectedFilter === 'expense') {
+            filteredResult = filteredResult.filter(transaction => transaction.type === selectedFilter);
+        } 
+        // Sort transactions based on selected sort criteria
+        filteredResult.sort((a, b) => {
+        if (sortBy === 'date') {
+                return new Date(a.date) - new Date(b.date);
+            } else if (sortBy === 'amount') {
+                return parseFloat(a.amount) - parseFloat(b.amount);
+            } else if (sortBy === 'category') {
+                return a.category_id.name.localeCompare(b.category_id.name);
+            }
+            return 0; // Default case, no sorting
+        });
+        setFilteredTransactions(filteredResult); 
+    }, [transactions, selectedFilter, sortBy]); 
+
+    // Handle search functionality
+    const handleSearch = (searchTerm) => {
+        // Filter transactions based on search term
+        const filtered = transactions.filter(transaction => 
+            transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            transaction.category_id.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredTransactions(filtered);
+    };
+
+    // Fetch transactions and categories when the component mounts
+    useEffect(() => {
+        // Fetch transactions
         const fetchTransactions = async () => {
+            // Check if user is authenticated and has a token
             if (!user) {
                 setLoading(false);
                 setError(new Error('User is not authenticated'));
@@ -84,6 +119,7 @@ function Transactions() {
                 setError(new Error('No authentication token found'));
                 return;
             }
+            // Check if accountId is available
             if (!accountId) {
                 setLoading(false);
                 setError(new Error('No account ID found'));
@@ -96,7 +132,6 @@ function Transactions() {
                     Authorization: `Bearer ${token}`,
                 },
                 });
-
                 setTransactions(response.data);
             } catch (err) {
                 setError(err);
@@ -104,7 +139,7 @@ function Transactions() {
                 setLoading(false);
             }
         };
-
+        // Fetch categories
         const fetchCategories = async () => {
             try {
                 const response = await axios.get(`${VITE_API_URL}/api/categories`, {
@@ -122,6 +157,7 @@ function Transactions() {
     }
     , []);
 
+    // Handle form submission for adding or editing transactions
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
@@ -129,7 +165,7 @@ function Transactions() {
         if (!formData.type) errors.type = 'Please select a transaction type.';
         if (!formData.date) errors.date = 'Please select a date.';
         if (!formData.name) errors.name = 'Please enter a name.';
-        if (!formData.amount || isNaN(formData.amount || parseFloat(formData.amount) <= 0)) errors.amount = 'Please enter a valid amount.';
+        if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) errors.amount = 'Please enter a valid amount.';
         if (!formData.category_id) errors.category_id = 'Please select a category.';
         if (new Date(formData.date) > new Date()) errors.date = 'Date cannot be in the future.';
         if (formData.type !== 'income' && formData.type !== 'expense') errors.type = 'Invalid transaction type.';
@@ -191,11 +227,13 @@ function Transactions() {
         }
     };
 
+    // Function to confirm deletion of a transaction
     const confirmDelete = (transaction_id) => {
         setDeleteTransaction(transaction_id)
         setShowDeleteModal(true);
     }
 
+    // Function to handle deletion of a transaction
     const handleDelete = async () => {
         try {
             await axios.delete(`${VITE_API_URL}/api/transactions/${deleteTransaction}`, {
@@ -231,7 +269,8 @@ function Transactions() {
             {/* Filter by type: income or expense */}
             <div className="flex items-center gap-2">
                 <label htmlFor="filter" className="text-sm font-medium text-gray-700">Filter:</label>
-                <select id="filter" className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                <select id="filter" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value)}>
                     <option value="">All</option>
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
@@ -241,7 +280,9 @@ function Transactions() {
             {/* Sort by amount or date */}
             <div className="flex items-center gap-2">
                 <label htmlFor="sort" className="text-sm font-medium text-gray-700">Sort by:</label>
-                <select id="sort" className="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                <select id="sort" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <option value="">None</option>
                     <option value="date">Date</option>
                     <option value="amount">Amount</option>
                     <option value="category">Category</option>
@@ -251,7 +292,8 @@ function Transactions() {
             {/* Search */}
             <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
                 <label htmlFor="search" className="text-sm font-medium text-gray-700">Search:</label>
-                <input type="text" id="search" placeholder="Search transactions..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"/>
+                <input type="text" id="search" placeholder="Search transactions..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                onChange={(e) => handleSearch(e.target.value)}/>
             </div>
 
             {/* Add button */}
@@ -262,7 +304,7 @@ function Transactions() {
 
         {/* Transaction list */}
         <div className="space-y-4">
-        {transactions.map(transaction => {
+        {filteredTransactions.map(transaction => {
             const matchedCategory = categories.find(
             category => String(category._id) === String(transaction.category_id._id)
             );
@@ -413,7 +455,7 @@ function Transactions() {
                         </div>
                     </>
                 )}
-                <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+                <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading}>
                 Save
                 </button>
             </form>
