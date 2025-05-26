@@ -37,6 +37,12 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const logout = () => {
+  localStorage.removeItem('user');
+  setUser(null);
+  setIsAuthenticated(false);
+};
+
 const checkAuth = async () => {
   const localUser = JSON.parse(localStorage.getItem('user'));
   if (!localUser?.token) return;
@@ -70,7 +76,7 @@ const checkAuth = async () => {
 
 
   return (
-    <AuthContext.Provider value={{signup, signin, user, isAuthenticated, errors, setErrors}}>
+    <AuthContext.Provider value={{signup, signin, logout, user, isAuthenticated, errors, setErrors}}>
       {children}
     </AuthContext.Provider>
   )
