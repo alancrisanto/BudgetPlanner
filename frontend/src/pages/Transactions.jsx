@@ -69,6 +69,8 @@ function Transactions() {
     }
     const closeModal = () => setShowModal(false);
 
+    const [formErrors, setFormErrors] = useState({});
+
     useEffect(() => {
         const fetchTransactions = async () => {
             if (!user) {
@@ -122,50 +124,38 @@ function Transactions() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Validate form data
-        if (!formData.type || !formData.date || !formData.name || !formData.amount || !formData.category_id) {
-            alert('Please fill in all fields.');
+        const errors = {};
+        // Check if all required fields are filled correctly
+        if (!formData.type) errors.type = 'Please select a transaction type.';
+        if (!formData.date) errors.date = 'Please select a date.';
+        if (!formData.name) errors.name = 'Please enter a name.';
+        if (!formData.amount || isNaN(formData.amount || parseFloat(formData.amount) <= 0)) errors.amount = 'Please enter a valid amount.';
+        if (!formData.category_id) errors.category_id = 'Please select a category.';
+        if (new Date(formData.date) > new Date()) errors.date = 'Date cannot be in the future.';
+        if (formData.type !== 'income' && formData.type !== 'expense') errors.type = 'Invalid transaction type.';
+        if (formData.recurring && !formData.frequency) errors.frequency = 'Please select a frequency for recurring transactions.';
+        if (formData.recurring && formData.end_date && new Date(formData.end_date) < new Date(formData.date)) errors.end_date = 'End date cannot be before the start date.';
+        if (formData.recurring && formData.next_date && new Date(formData.next_date) < new Date(formData.date)) errors.next_date = 'Next date cannot be before the start date.';
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
             return;
         }
-        if (isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
-            alert('Please enter a valid amount.');
-            return;
-        }
-        if (new Date(formData.date) > new Date()) {
-            alert('Date cannot be in the future.');
-            return;
-        }
-        if (formData.category_id === '') {
-            alert('Please select a category.');
-            return;
-        }
-        if (formData.type !== 'income' && formData.type !== 'expense') {
-            alert('Please select a valid transaction type.');
-            return;
-        }
-        if (formData.recurring && !formData.frequency) {
-            alert('Please select a frequency for recurring transactions.');
-            return;
-        }
-        if (formData.recurring && formData.end_date && new Date(formData.end_date) < new Date(formData.date)) {
-            alert('End date cannot be before the start date.');
-            return;
-        }
-        if (formData.recurring && formData.next_date && new Date(formData.next_date) < new Date(formData.date)) {
-            alert('Next date cannot be before the start date.');
-            return;
-        }
+        setFormErrors({}); // Clear errors if no validation issues
         try {
+            // Prepare form data for submission
+            const formDataToSubmit = {
+                ...formData,
+                account_id: accountId,
+                amount: parseFloat(formData.amount),
+                frequency: formData.recurring ? formData.frequency : null,
+                next_date: formData.recurring ? formData.next_date : null,
+                end_date: formData.recurring ? formData.end_date : null,
+            };
+            // If editing an existing transaction, update it; otherwise, create a new one
             if (editTransaction) {
                 // Update transaction
-                const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`, {
-                    ...formData,
-                    account_id: accountId,
-                    amount: parseFloat(formData.amount),
-                    frequency: formData.recurring ? formData.frequency : null,
-                    next_date: formData.recurring ? formData.next_date : null,
-                    end_date: formData.recurring ? formData.end_date : null,
-                }, {
+                const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`, 
+                    formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -173,14 +163,8 @@ function Transactions() {
                 setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? response.data : transaction));
             } else {
                 // Create new transaction
-                const response = await axios.post(`${VITE_API_URL}/api/transactions`, {
-                    ...formData,
-                    account_id: accountId,
-                    amount: parseFloat(formData.amount),
-                    frequency: formData.recurring ? formData.frequency : null,
-                    next_date: formData.recurring ? formData.next_date : null,
-                    end_date: formData.recurring ? formData.end_date : null,
-                }, {
+                const response = await axios.post(`${VITE_API_URL}/api/transactions`, 
+                    formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
