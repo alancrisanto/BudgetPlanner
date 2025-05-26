@@ -57,7 +57,10 @@ exports.createTransaction = async (req, res) => {
         account.remainder = account.income_total - account.expense_total;
         await account.save();
 
-        res.status(201).json(newTransaction);
+        // populate category and tags for the response
+        const populatedTransaction = await newTransaction.populate('category_id tags');
+
+        res.status(201).json(populatedTransaction);
     } catch (err) {
         res.status(500).json({ message: 'Error creating transaction', error: err.message });
     }
