@@ -6,7 +6,8 @@ const Transaction = require('../models/Transaction');
 const {
     getTransactions,
     createTransaction,
-    deleteTransaction
+    deleteTransaction,
+    updateTransaction
 } = require('../controllers/TransactionController');
 
 function calculateNextDate(current, frequency) {
@@ -25,6 +26,7 @@ function calculateNextDate(current, frequency) {
 router.get('/', auth, getTransactions); // ?account_id=...
 router.post('/', auth, createTransaction);
 router.delete('/:id', auth, deleteTransaction);
+router.put('/:id', auth, updateTransaction);
 
 
 
