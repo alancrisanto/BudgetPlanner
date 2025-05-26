@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 
-const VITE_API_URL = import.meta.env.VITE_API_URL;
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Transactions() {
     // Verify if the user is authenticated
