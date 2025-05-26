@@ -7,6 +7,14 @@ import Modal from '../components/Modal';
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 function Transactions() {
+    // Verify if the user is authenticated
+    // and retrieve user information from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = user ? user.token : null;
+    // const accountId = localStorage.getItem('account_id');
+    const accountId = import.meta.env.VITE_ACCOUNT_ID; // hardcoded for now
+
+    // State variables for transactions, loading, error, categories, form data, and modals
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,15 +26,11 @@ function Transactions() {
         amount: '',
         category_id: ''
     });
+
     const [editTransaction, setEditTransaction] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const closeDeleteModal = () => setShowDeleteModal(false);
     const [deleteTransaction, setDeleteTransaction] = useState(null);
-
-    // const accountId = localStorage.getItem('account_id');
-    // hardcoded for now
-    const accountId = import.meta.env.VITE_ACCOUNT_ID;
-    const token = import.meta.env.VITE_TOKEN;
     
     const [showModal, setShowModal] = useState(false);
     const openModal = (transaction = null) => {
@@ -55,8 +59,23 @@ function Transactions() {
 
     useEffect(() => {
         const fetchTransactions = async () => {
+            if (!user) {
+                setLoading(false);
+                setError(new Error('User is not authenticated'));
+                return;
+            }
+            setLoading(true);
+            if (!token) {
+                setLoading(false);
+                setError(new Error('No authentication token found'));
+                return;
+            }
+            if (!accountId) {
+                setLoading(false);
+                setError(new Error('No account ID found'));
+                return;
+            }
             try {
-                // const token = localStorage.getItem('token');
 
                 const response = await axios.get(`${VITE_API_URL}/api/transactions`, {
                 params: { account_id: accountId },
@@ -127,7 +146,6 @@ function Transactions() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log("Submitting form data:", formData);
                 setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? response.data : transaction));
             } else {
                 // Create new transaction
@@ -140,7 +158,6 @@ function Transactions() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log("Submitting form data:", formData);
                 setTransactions([...transactions, response.data]);
             }
             // Reset form data
@@ -172,7 +189,6 @@ function Transactions() {
                 },
             });
             setTransactions(transactions.filter(transaction => transaction._id !== deleteTransaction));
-            console.log("Transaction deleted:", deleteTransaction);
         } catch (err) {
             console.error('Error deleting transaction:', err);
             setError(err);
@@ -235,8 +251,6 @@ function Transactions() {
             const matchedCategory = categories.find(
             category => String(category._id) === String(transaction.category_id._id)
             );
-            console.log("Matched category:", matchedCategory);
-            console.log("Transaction:", transaction);
             // Determine the arrow direction and color based on transaction type
             const isIncome = transaction.type === 'income';
             const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
