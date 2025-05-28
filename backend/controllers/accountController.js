@@ -10,7 +10,7 @@ exports.getAccounts = async (req, res) => {
 };
 
 exports.createAccount = async (req, res) => {
-    try {
+  try {
         const { name } = req.body;
         const newAccount = await Account.create({
             user_id: req.user.id,
@@ -21,6 +21,7 @@ exports.createAccount = async (req, res) => {
         res.status(500).json({ message: 'Error creating account', error: err.message });
     }
 };
+
 
 exports.deleteAccount = async (req, res) => {
     try {
