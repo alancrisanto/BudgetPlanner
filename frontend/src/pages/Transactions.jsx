@@ -4,15 +4,14 @@ import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 
-const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const VITE_API_URL = import.meta.env.VITE_API_URL
 
 function Transactions() {
     // Verify if the user is authenticated
     // and retrieve user information from localStorage
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user ? user.token : null;
-    // const accountId = localStorage.getItem('account_id');
-    const accountId = import.meta.env.VITE_ACCOUNT_ID; // hardcoded until the accounts are implemented
+    const accountId = localStorage.getItem('account_id');
 
     // State variables for transactions, loading, error, categories, form data, and modals
     const [transactions, setTransactions] = useState([]);
@@ -25,11 +24,7 @@ function Transactions() {
         date: '',
         name: '',
         amount: '',
-        category_id: '',
-        recurring: false,
-        frequency: '',
-        next_date: '',
-        end_date: ''
+        category_id: ''
     });
 
     const [editTransaction, setEditTransaction] = useState(null);
@@ -42,11 +37,7 @@ function Transactions() {
                 date: transaction.date.slice(0, 10),
                 name: transaction.name,
                 amount: transaction.amount,
-                category_id: transaction.category_id,
-                recurring: transaction.recurring || false,
-                frequency: transaction.frequency || '',
-                next_date: transaction.next_date ? transaction.next_date.slice(0, 10) : '',
-                end_date: transaction.end_date ? transaction.end_date.slice(0, 10) : ''
+                category_id: transaction.category_id
             });
         } else {
             setEditTransaction(null);
@@ -55,11 +46,7 @@ function Transactions() {
                 date: '',
                 name: '',
                 amount: '',
-                category_id: '',
-                recurring: false,
-                frequency: '',
-                next_date: '',
-                end_date: ''
+                category_id: ''
             });
         };
         setShowModal(true);
@@ -119,19 +106,13 @@ function Transactions() {
                 setError(new Error('No authentication token found'));
                 return;
             }
-            // Check if accountId is available
-            if (!accountId) {
-                setLoading(false);
-                setError(new Error('No account ID found'));
-                return;
-            }
             try {
                 const response = await axios.get(`${VITE_API_URL}/api/transactions`, {
-                params: { account_id: accountId },
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
                 });
+                console.log("Fetched transactions:", response.data); // testing
                 setTransactions(response.data);
             } catch (err) {
                 setError(err);
@@ -169,9 +150,6 @@ function Transactions() {
         if (!formData.category_id) errors.category_id = 'Please select a category.';
         if (new Date(formData.date) > new Date()) errors.date = 'Date cannot be in the future.';
         if (formData.type !== 'income' && formData.type !== 'expense') errors.type = 'Invalid transaction type.';
-        if (formData.recurring && !formData.frequency) errors.frequency = 'Please select a frequency for recurring transactions.';
-        if (formData.recurring && formData.end_date && new Date(formData.end_date) < new Date(formData.date)) errors.end_date = 'End date cannot be before the start date.';
-        if (formData.recurring && formData.next_date && new Date(formData.next_date) < new Date(formData.date)) errors.next_date = 'Next date cannot be before the start date.';
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
@@ -183,9 +161,6 @@ function Transactions() {
                 ...formData,
                 account_id: accountId,
                 amount: parseFloat(formData.amount),
-                frequency: formData.recurring ? formData.frequency : null,
-                next_date: formData.recurring ? formData.next_date : null,
-                end_date: formData.recurring ? formData.end_date : null,
             };
             // If editing an existing transaction, update it; otherwise, create a new one
             if (editTransaction) {
@@ -213,11 +188,7 @@ function Transactions() {
                 date: '',
                 name: '',
                 amount: '', 
-                category_id: '',
-                recurring: false,
-                frequency: '',
-                next_date: '',
-                end_date: ''
+                category_id: ''
             });
             setEditTransaction(null);
             closeModal();
@@ -314,6 +285,7 @@ function Transactions() {
             const arrow = isIncome ? '↑' : '↓';
             // Format the date
             const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
+            timezone: 'UTC',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -330,9 +302,6 @@ function Transactions() {
                 <div className="flex-1">
                     <div className="text-lg font-semibold">{transaction.name}</div>
                     <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
-                    {transaction.recurring && (
-                        <div className="text-sm text-blue-500">Recurring: {transaction.frequency}</div>
-                    )}
                 </div>
                 {/* Amount and date */}
                 <div className="flex items-center gap-4 pl-4">
@@ -413,48 +382,6 @@ function Transactions() {
                         <span className="text-red-500 text-xs">{formErrors.category_id}</span>
                     )}
                 </div>
-                <div className="mb-4">
-                    <label className="block mb-1 font-medium">Recurring</label>
-                    <input type="checkbox" 
-                        checked={formData.recurring} onChange={(e) => setFormData({...formData, recurring: e.target.checked})}/>
-                    <span className="ml-2">Yes</span>
-                </div>
-                { formData.recurring && (
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium">Frequency</label>
-                        <select className="w-full border border-gray-300 rounded p-2"
-                            value={formData.frequency} onChange={(e) => setFormData({...formData, frequency:e.target.value})}>
-                            <option value="">Select Frequency</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="biweekly">Biweekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                        </select>
-                        {formErrors.frequency && (
-                            <span className="text-red-500 text-xs">{formErrors.frequency}</span>
-                        )}
-                    </div>
-                )}
-                { formData.recurring && (
-                    <>
-                        <div className="mb-4">
-                            <label className="block mb-1 font-medium">Next Date</label>
-                            <input className="w-full border border-gray-300 rounded p-2" type="date"
-                                value={formData.next_date} onChange={(e) => setFormData({...formData, next_date:e.target.value})}/>
-                            {formErrors.next_date && (
-                            <span className="text-red-500 text-xs">{formErrors.next_date}</span>
-                        )}
-                        </div>
-                        <div className="mb-4">
-                            <label className="block mb-1 font-medium">End Date</label>
-                            <input className="w-full border border-gray-300 rounded p-2" type="date"
-                                value={formData.end_date} onChange={(e) => setFormData({...formData, end_date:e.target.value})}/>
-                            {formErrors.end_date && (
-                            <span className="text-red-500 text-xs">{formErrors.end_date}</span>
-                        )}
-                        </div>
-                    </>
-                )}
                 <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading}>
                 Save
                 </button>

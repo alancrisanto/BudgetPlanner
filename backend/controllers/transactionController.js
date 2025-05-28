@@ -2,15 +2,26 @@ const Transaction = require('../models/Transaction');
 const Account = require('../models/Account');
 const mongoose = require('mongoose');
 
-exports.getTransactions = async (req, res) => {
+exports.getTransactionsByAccount = async (req, res) => {
     try {
-        const accountId = new mongoose.Types.ObjectId(req.query.account_id);
+        const accountId = new mongoose.Types.ObjectId(req.params.id);
         const transactions = await Transaction.find({ account_id: accountId }).populate('category_id tags');
         res.json(transactions);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching transactions', error: err.message });
+        res.status(500).json({ message: 'Error fetching transactions from account', error: err.message });
     }
 };
+
+exports.getTransactions = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const transactions = await Transaction.find({ user_id: userId}).populate('category_id tags');
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching transactions from user', error: err.message });
+    }
+}
+
 
 exports.createTransaction = async (req, res) => {
     try {

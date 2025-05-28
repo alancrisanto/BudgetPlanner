@@ -4,6 +4,7 @@ const auth = require('../middleware/AuthMiddleware');
 const Transaction = require('../models/Transaction');
 
 const {
+    getTransactionsByAccount,
     getTransactions,
     createTransaction,
     deleteTransaction,
@@ -23,7 +24,8 @@ function calculateNextDate(current, frequency) {
 
 
 
-router.get('/', auth, getTransactions); // ?account_id=...
+router.get('/byAccount/:id', auth, getTransactionsByAccount); // ?account_id=...
+router.get('/', auth, getTransactions); // Get all transactions for the user
 router.post('/', auth, createTransaction);
 router.delete('/:id', auth, deleteTransaction);
 router.put('/:id', auth, updateTransaction);
