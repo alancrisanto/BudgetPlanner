@@ -25,10 +25,6 @@ exports.getTransactions = async (req, res) => {
             .populate('category_id tags')
             .populate('tags')
             .populate('account_id');
-        if (!transactions || transactions.length === 0) {
-            return res.status(404).json({ message: 'No transactions found for this user' });
-        }
-        // Return the transactions
         res.json(transactions);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching transactions from user', error: err.message });
