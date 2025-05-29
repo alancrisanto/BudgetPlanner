@@ -11,7 +11,9 @@ function Transactions() {
     // and retrieve user information from localStorage
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user ? user.token : null;
-    const accountId = localStorage.getItem('account_id');
+    
+    const [accounts, setAccounts] = useState([]);
+    const [selectedAccount, setSelectedAccount] = useState('');
 
     // State variables for transactions, loading, error, categories, form data, and modals
     const [transactions, setTransactions] = useState([]);
@@ -20,6 +22,7 @@ function Transactions() {
     const [formErrors, setFormErrors] = useState({});
     const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({
+        account_id: selectedAccount || '',
         type: '',
         date: '',
         name: '',
@@ -33,6 +36,7 @@ function Transactions() {
         if (transaction) {
             setEditTransaction(transaction);
             setFormData({
+                account_id: transaction.account_id._id || selectedAccount,
                 type: transaction.type || 'expense',
                 date: transaction.date.slice(0, 10),
                 name: transaction.name,
@@ -42,6 +46,7 @@ function Transactions() {
         } else {
             setEditTransaction(null);
             setFormData({
+                account_id: selectedAccount,
                 type: 'expense',
                 date: '',
                 name: '',
@@ -62,6 +67,10 @@ function Transactions() {
     
     useEffect(() => {
         let filteredResult = [...transactions];
+        // Filter transactions based on selected account
+        if (selectedAccount && selectedAccount !== 'all') {
+            filteredResult = filteredResult.filter(transaction => String(transaction.account_id._id) === String(selectedAccount));
+        }
         // Filter transactions based on selected filter
         if (selectedFilter === 'income' || selectedFilter === 'expense') {
             filteredResult = filteredResult.filter(transaction => transaction.type === selectedFilter);
@@ -78,7 +87,7 @@ function Transactions() {
             return 0; // Default case, no sorting
         });
         setFilteredTransactions(filteredResult); 
-    }, [transactions, selectedFilter, sortBy]); 
+    }, [transactions, selectedAccount ,selectedFilter, sortBy]); 
 
     // Handle search functionality
     const handleSearch = (searchTerm) => {
@@ -90,59 +99,56 @@ function Transactions() {
         setFilteredTransactions(filtered);
     };
 
-    // Fetch transactions and categories when the component mounts
+    // Fetch accounts, transactions and categories
     useEffect(() => {
-        // Fetch transactions
-        const fetchTransactions = async () => {
-            // Check if user is authenticated and has a token
-            if (!user) {
-                setLoading(false);
-                setError(new Error('User is not authenticated'));
-                return;
-            }
+        const fetchData = async () => {
+        if (!token) {
+            setError(new Error('User is not authenticated.'));
+            setLoading(false);
+            return;
+        }
+        try {
             setLoading(true);
-            if (!token) {
-                setLoading(false);
-                setError(new Error('No authentication token found'));
-                return;
-            }
-            try {
-                const response = await axios.get(`${VITE_API_URL}/api/transactions`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                });
-                console.log("Fetched transactions:", response.data); // testing
-                setTransactions(response.data);
-            } catch (err) {
-                setError(err);
-            } finally {
-                setLoading(false);
-            }
+            const [accountsResponse, transactionsResponse, categoriesResponse] = await Promise.all([
+                axios.get(`${VITE_API_URL}/api/accounts`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                axios.get(`${VITE_API_URL}/api/transactions`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                axios.get(`${VITE_API_URL}/api/categories`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+            ]);
+            console.log("Transactions fetched:", transactionsResponse.data);
+            setAccounts(accountsResponse.data);
+            setTransactions(transactionsResponse.data);
+            setCategories(categoriesResponse.data);
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
         };
-        // Fetch categories
-        const fetchCategories = async () => {
-            try {
-                const response = await axios.get(`${VITE_API_URL}/api/categories`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                });
-                setCategories(response.data);
-            } catch (err) {
-                setError(err);
-            }
-        };
-        fetchTransactions();
-        fetchCategories();
-    }
-    , []);
+        // If token is available, fetch data
+        if (token) {
+            fetchData();
+        }
+    }, [token]);
 
     // Handle form submission for adding or editing transactions
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
         // Check if all required fields are filled correctly
+        if (!formData.account_id) errors.account_id = 'Account ID is required.';
         if (!formData.type) errors.type = 'Please select a transaction type.';
         if (!formData.date) errors.date = 'Please select a date.';
         if (!formData.name) errors.name = 'Please enter a name.';
@@ -159,7 +165,7 @@ function Transactions() {
             // Prepare form data for submission
             const formDataToSubmit = {
                 ...formData,
-                account_id: accountId,
+                account_id: formData.account_id,
                 amount: parseFloat(formData.amount),
             };
             // If editing an existing transaction, update it; otherwise, create a new one
@@ -184,6 +190,7 @@ function Transactions() {
             }
             // Reset form data
             setFormData({
+                account_id: selectedAccount || '',
                 type: '',
                 date: '',
                 name: '',
@@ -236,6 +243,17 @@ function Transactions() {
         <div className="p-6">
             <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            {/* Filter by account */}
+            <div className="flex items-center gap-2">
+                <label htmlFor="account" className="text-sm font-medium text-gray-700">Account</label>
+                <select id="account" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
+                    <option value="all">All</option>
+                    {accounts.map(account => (
+                        <option key={account._id} value={account._id}>{account.name}</option>
+                    ))}
+                </select>
+            </div>
 
             {/* Filter by type: income or expense */}
             <div className="flex items-center gap-2">
@@ -302,6 +320,7 @@ function Transactions() {
                 <div className="flex-1">
                     <div className="text-lg font-semibold">{transaction.name}</div>
                     <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
+                    <div className="text-sm text-gray-500">{transaction.account_id?.name || "No account"}</div>
                 </div>
                 {/* Amount and date */}
                 <div className="flex items-center gap-4 pl-4">
@@ -328,6 +347,20 @@ function Transactions() {
 
         <Modal isOpen={showModal} onClose={closeModal} title={editTransaction ? "Edit Transaction" : "Add Transaction"}>
             <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                    <label className="block mb-1 font-medium">Account</label>
+                    <select className="w-full border border-gray-300 rounded p-2"
+                        value={formData.account_id} onChange={(e) => setFormData({...formData, account_id:e.target.value})}
+                        required>
+                        <option value="">Select Account</option>
+                        {accounts.map(account => (
+                            <option key={account._id} value={account._id}>{account.name}</option>
+                        ))}
+                    </select>
+                    {formErrors.account_id && (
+                        <span className="text-red-500 text-xs">{formErrors.account_id}</span>
+                    )}
+                </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-medium">Type</label>
                     <select className="w-full border border-gray-300 rounded p-2"
