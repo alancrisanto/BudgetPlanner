@@ -4,6 +4,7 @@ const auth = require('../middleware/AuthMiddleware');
 const Transaction = require('../models/Transaction');
 
 const {
+    getTransactionsByAccount,
     getTransactions,
     createTransaction,
     deleteTransaction,
