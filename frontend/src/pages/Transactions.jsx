@@ -229,15 +229,11 @@ function Transactions() {
         }
     };
 
-    if (loading) {
-        return <div className="p-4">Loading...</div>;
-    }
     if (error) {
         return <div className="p-4 text-red-500">Error: {error.message}</div>;
     }
-    if (transactions.length === 0) {
-        return <div className="p-4">No transactions found.</div>;
-    }
+
+
 
     return (
         <div className="p-6">
@@ -291,60 +287,71 @@ function Transactions() {
             </button>
         </div>
 
-        {/* Transaction list */}
-        <div className="space-y-4">
-        {filteredTransactions.map(transaction => {
-            const matchedCategory = categories.find(
-            category => String(category._id) === String(transaction.category_id._id)
-            );
-            // Determine the arrow direction and color based on transaction type
-            const isIncome = transaction.type === 'income';
-            const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
-            const arrow = isIncome ? '↑' : '↓';
-            // Format the date
-            const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
-            timezone: 'UTC',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            });
-
-        return (
-            
-            <div key={transaction._id} className="flex justify-between items-start p-4 bg-white rounded-2xl shadow-md">
-                {/* Left arrow icon */}
-                <div className="flex flex-col items-center mr-4">
-                    <div className={`text-2xl font-bold ${arrowColor}`}>{arrow}</div>
-                </div>
-                {/* Transaction name, category and recurring option */}
-                <div className="flex-1">
-                    <div className="text-lg font-semibold">{transaction.name}</div>
-                    <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
-                    <div className="text-sm text-gray-500">{transaction.account_id?.name || "No account"}</div>
-                </div>
-                {/* Amount and date */}
-                <div className="flex items-center gap-4 pl-4">
-                <div className="text-right">
-                    <div className="text-lg font-semibold">
-                    {isIncome ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
+        {loading ? (<div className="text-center">Loading transactions...</div>
+        ) : (
+            <>
+                {filteredTransactions.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-12">
+                        No transactions found. Create an account first.
                     </div>
-                    <div className="text-sm text-gray-500">{formattedDate}</div>
-                </div>
-                {/* Edit and delete buttons */}
-                <div className="flex flex-col items-center space-y-2">
-                    <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
-                        <Pencil size={16} />
-                    </button>
-                    <button onClick={() => confirmDelete(transaction._id)} className="hover:text-red-700" title="Delete">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-                </div>
-            </div>
-        );
-        })}
-        </div>
+                ) : (
+                    // Transactions list
+                    <div className="space-y-4">
+                        {filteredTransactions.map(transaction => {
+                            const matchedCategory = categories.find(
+                            category => String(category._id) === String(transaction.category_id._id)
+                            );
+                            // Determine the arrow direction and color based on transaction type
+                            const isIncome = transaction.type === 'income';
+                            const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
+                            const arrow = isIncome ? '↑' : '↓';
+                            // Format the date
+                            const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
+                            timezone: 'UTC',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            });
 
+                            return (
+                                <div key={transaction._id} className="flex justify-between items-start p-4 bg-white rounded-2xl shadow-md">
+                                    {/* Left arrow icon */}
+                                    <div className="flex flex-col items-center mr-4">
+                                        <div className={`text-2xl font-bold ${arrowColor}`}>{arrow}</div>
+                                    </div>
+                                    {/* Transaction name, category and recurring option */}
+                                    <div className="flex-1">
+                                        <div className="text-lg font-semibold">{transaction.name}</div>
+                                        <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
+                                        <div className="text-sm text-gray-500">{transaction.account_id?.name || "No account"}</div>
+                                    </div>
+                                    {/* Amount and date */}
+                                    <div className="flex items-center gap-4 pl-4">
+                                    <div className="text-right">
+                                        <div className="text-lg font-semibold">
+                                        {isIncome ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
+                                        </div>
+                                        <div className="text-sm text-gray-500">{formattedDate}</div>
+                                    </div>
+                                    {/* Edit and delete buttons */}
+                                    <div className="flex flex-col items-center space-y-2">
+                                        <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button onClick={() => confirmDelete(transaction._id)} className="hover:text-red-700" title="Delete">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                    </div>
+                                </div>
+                            );
+                            })}
+                    </div>
+                )}
+            </>
+        )}
+
+        {/* Modal for adding/editing transactions */}
         <Modal isOpen={showModal} onClose={closeModal} title={editTransaction ? "Edit Transaction" : "Add Transaction"}>
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -421,6 +428,7 @@ function Transactions() {
             </form>
         </Modal>
 
+        {/* Modal for confirming deletion */}
         <Modal isOpen={showDeleteModal} title="Confirm Deletion" onClose={closeDeleteModal}>
             <div className="space-y-4">
                 <p>Are you sure you want to delete this transaction? This action cannot be undone.</p>
