@@ -20,6 +20,7 @@ const accountRoutes = require('./routes/accounts');
 const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
 const tagRoutes = require('./routes/tags');
+const userRoutes = require('./routes/user');
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -27,6 +28,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/user', userRoutes);
 
 // Serve static frontend from /frontend/dist
 const frontendPath = path.join(__dirname, '../frontend/dist');

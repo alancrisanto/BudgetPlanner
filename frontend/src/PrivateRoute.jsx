@@ -1,18 +1,13 @@
-import { useAuth } from "./context/AuthContext"
-import { Navigate, Outlet } from "react-router-dom"
-
+import { useAuth } from "./context/AuthContext";
+import { Navigate, Outlet } from "react-router-dom";
+import Spinner from "./components/Spinner";
 
 function PrivateRoute() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, loading } = useAuth();
 
-  // Check if the user is authenticated
-  if (!isAuthenticated) {
-    // Redirect to the login page or show an error message
-    return <Navigate to="/login" replace />
-  }
-  return (
-    <Outlet />
-  )
+  if (loading) return <Spinner />;
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-export default PrivateRoute
+export default PrivateRoute;
