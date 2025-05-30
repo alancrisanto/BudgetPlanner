@@ -115,21 +115,22 @@ function Accounts() {
     }
 
     return (
-        <div className="flex flex-col items-center min-h-screen p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Accounts</h2>
+        <div className="flex flex-col min-h-screen p-6">
+            <h1 className="text-2xl font-semibold mb-4">Accounts</h1>
 
-            <div className="w-full max-w-6xl flex space-x-6">
+            <div className="w-full max-w-6xl flex mb-10">
 
                 <div className="flex-shrink-0">
                     <button
                         onClick={() => openModal()}
-                        className="py-2 px-6 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap"
                     >
                         Add New Account
                     </button>
                 </div>
+            </div>
 
-                <div className="flex-grow">
+                <div className="w-flow max-w-6xl">
                     {accounts.length === 0 ? (
                         <p className="text-gray-500 text-center">No accounts yet.</p>
                     ) : (
@@ -143,17 +144,15 @@ function Accounts() {
                                         <h3 className="text-lg font-semibold text-gray-800">{account.name}</h3>
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1">
-                                        <p>Income: <span className="text-green-600 font-medium">${account.income_total || 0}</span></p>
-                                        <p>Expenses: <span className="text-red-600 font-medium">${account.expense_total || 0}</span></p>
-                                        <p className="font-semibold text-gray-700">Remainder: ${account.remainder || 0}</p>
+                                        <p>Income: <span className="text-green-600 font-medium">${(account.income_total).toFixed(2) || 0}</span></p>
+                                        <p>Expenses: <span className="text-red-600 font-medium">${(account.expense_total).toFixed(2) || 0}</span></p>
+                                        <p className="font-semibold text-gray-700">Remainder: ${(account.remainder).toFixed || 0}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
-
                     )}
                 </div>
-            </div>
 
             <Modal isOpen={showModal} onClose={closeModal} title="Add Account" onSubmit={handleAddAccount}>
                 <form onSubmit={handleAddAccount} className="space-y-4">
