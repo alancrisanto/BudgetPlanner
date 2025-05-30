@@ -13,6 +13,7 @@ function AccountDetails() {
     const [account, setAccount] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [ transactions, setTransactions ] = useState([]);
 
     useEffect(() => {
         if (!isAuthenticated) { return; }
@@ -34,7 +35,24 @@ function AccountDetails() {
         };
 
         fetchAccount();
-    }, [id, user.token]);
+    }, [id, user.token, isAuthenticated]);
+
+    useEffect(() => {
+        const fetchTransactions = async () => {    
+            try {
+                const response = await axios.get(`${VITE_API_URL}/api/transactions/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${user.token}`
+                    }
+                });
+                console.log('Fetched transactions for account:', response.data);
+                setTransactions(response.data);
+            } catch (err) {
+                setError(err.response ? err.response.data.message : 'Error fetching transactions');
+            }
+        };
+        fetchTransactions();
+    }, [id, user.token, isAuthenticated]);
 
     return (
         <div className="flex flex-col min-h-screen p-6">
@@ -75,6 +93,44 @@ function AccountDetails() {
                     </div>
                 </div>
             </div>
+            
+            {/* Transactions List */}
+            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">Transactions</h2>
+                {transactions.length > 0 ? (
+                    <ul className="space-y-4">
+                        {transactions.map((transaction) => (
+                            <li
+                                key={transaction._id}
+                                className="flex justify-between items-start p-3 rounded-md hover:bg-gray-100 transition-transform duration-200 hover:scale-[1.01]"
+                            >
+                                <div>
+                                    <span className="font-medium text-gray-800">{transaction.name}</span>
+                                    <div className="text-sm text-gray-600">
+                                        {transaction.category_id?.name || 'No category'}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-base font-semibold text-gray-900">
+                                        {(transaction.type === 'income' ? '+' : '-')}${transaction.amount.toFixed(2)}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        {new Date(transaction.date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="text-gray-500">No transactions found for this account.</div>
+                )}
+            </div>
+
+
 
             {/* Back Button */}
             <div>
