@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../components/Modal';
+import { Ellipsis } from 'lucide-react';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -136,17 +137,15 @@ function Accounts() {
                     ) : (
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
                             {accounts.map(account => (
-                                <div
-                                    key={account._id}
-                                    className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-5"
-                                >
+                                <div key={account._id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-5">
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-lg font-semibold text-gray-800">{account.name}</h3>
+                                        <Link to={`/accounts/${account._id}`} className='text-gray-500 hover:text-gray-700'><Ellipsis size={18} /></Link>
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1">
                                         <p>Income: <span className="text-green-600 font-medium">${(account.income_total).toFixed(2) || 0}</span></p>
                                         <p>Expenses: <span className="text-red-600 font-medium">${(account.expense_total).toFixed(2) || 0}</span></p>
-                                        <p className="font-semibold text-gray-700">Remainder: ${(account.remainder).toFixed || 0}</p>
+                                        <p className="font-semibold text-gray-700">Remainder: ${Number((account.income_total || 0) - (account.expense_total || 0)).toFixed(2)}</p>
                                     </div>
                                 </div>
                             ))}
