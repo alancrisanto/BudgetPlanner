@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import ExpenseIncomeChart from '../components/charts/ExpenseIncomeChart';
+import CategoriesChart from '../components/charts/CategoriesChart';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,7 +27,6 @@ function AccountDetails() {
                         Authorization: `Bearer ${user.token}`
                     }
                 });
-                console.log('Fetched account:', response.data);
                 setAccount(response.data);
             } catch (err) {
                 setError(err.response ? err.response.data.message : 'Error fetching account');
@@ -45,7 +46,6 @@ function AccountDetails() {
                         Authorization: `Bearer ${user.token}`
                     }
                 });
-                console.log('Fetched transactions for account:', response.data);
                 setTransactions(response.data);
             } catch (err) {
                 setError(err.response ? err.response.data.message : 'Error fetching transactions');
@@ -55,17 +55,18 @@ function AccountDetails() {
     }, [id, user.token, isAuthenticated]);
 
     return (
-        <div className="flex flex-col min-h-screen p-6">
+    <div className="flex flex-col min-h-screen p-4 sm:p-6">
     {loading ? (
         <div className="text-center text-gray-500">Loading...</div>
     ) : error ? (
         <div className="text-center text-red-500">{error}</div>
     ) : (
-        <div className="w-full max-w-4xl mx-auto space-y-6">
+        <div className="space-y-6 max-w-7xl mx-auto w-full">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold text-gray-800">{account.name}</h1>
                 <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2">
-                    Edit Account</button>
+                    Edit Account
+                </button>
             </div>
 
             {/* Account Summary */}
@@ -74,26 +75,34 @@ function AccountDetails() {
                 <div className="space-y-2 text-sm md:text-base text-gray-700">
                     <div className="flex justify-between">
                         <span className="font-medium text-gray-800">Total Income</span>
-                        <span className="text-green-600 font-semibold">
-                            ${account.income_total?.toFixed(2) || '0.00'}
-                        </span>
+                        <span className="text-green-600 font-semibold">${account.income_total?.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="font-medium text-gray-800">Total Expenses</span>
-                        <span className="text-red-600 font-semibold">
-                            ${account.expense_total?.toFixed(2) || '0.00'}
-                        </span>
+                        <span className="text-red-600 font-semibold">${account.expense_total?.toFixed(2) || '0.00'}</span>
                     </div>
                     <hr className="my-2 border-gray-200" />
                     <div className="flex justify-between pt-2">
                         <span className="font-medium text-gray-800">Remainder</span>
-                        <span className="font-semibold">
-                            ${(Number(account.income_total || 0) - Number(account.expense_total || 0)).toFixed(2)}
-                        </span>
+                        <span className="font-semibold">${(Number(account.income_total || 0) - Number(account.expense_total || 0)).toFixed(2)}</span>
                     </div>
                 </div>
             </div>
-            
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Expense and Income Chart */}
+                <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses and Income</h2>
+                    <ExpenseIncomeChart transactions={transactions} />
+                </div>
+
+                {/* Categories Chart */}
+                <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses by Category</h2>
+                    <CategoriesChart transactions={transactions} />
+                </div>
+            </div>
+
             {/* Transactions List */}
             <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">Transactions</h2>
@@ -130,8 +139,6 @@ function AccountDetails() {
                 )}
             </div>
 
-
-
             {/* Back Button */}
             <div>
                 <button
@@ -145,7 +152,8 @@ function AccountDetails() {
     )}
 </div>
 
-    );
+);
+
 }
 
 export default AccountDetails;

@@ -292,7 +292,7 @@ function Transactions() {
             <>
                 {filteredTransactions.length === 0 ? (
                     <div className="text-center text-gray-500 mt-12">
-                        No transactions found. Create an account first.
+                        No transactions found.
                     </div>
                 ) : (
                     // Transactions list
