@@ -11,7 +11,8 @@ const {
     updateTransaction
 } = require('../controllers/TransactionController');
 
-router.get('/', auth, getTransactions); // ?account_id=...
+router.get('/', auth, getTransactions); // by user
+router.get('/:id', auth, getTransactionsByAccount); // by account
 router.post('/', auth, createTransaction);
 router.delete('/:id', auth, deleteTransaction);
 router.put('/:id', auth, updateTransaction);

@@ -9,6 +9,16 @@ exports.getAccounts = async (req, res) => {
     }
 };
 
+exports.getAccountById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const account = await Account.findOne({ _id: id, user_id: req.user.id });
+        res.json(account);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching account', error: err.message });
+    }
+}
+
 exports.createAccount = async (req, res) => {
   try {
         const { name } = req.body;

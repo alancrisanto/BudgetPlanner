@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Transactions from "./pages/Transactions";
 import Settings from "./pages/Settings"
+import AccountDetails from "./pages/AccountDetails";
 import { useState } from "react";
 function App() {
 	const [mobileOpen, setMobileOpen] = useState(false);
@@ -34,6 +35,7 @@ function App() {
 									<Route path="/accounts" element={<Accounts />} />
 									<Route path="/transactions" element={<Transactions />} />
 									<Route path="/settings" element={<Settings />} />
+									<Route path="/accounts/:id" element={<AccountDetails />} />
 
 								</Route>
 								<Route path="/login" element={<Login />} />
