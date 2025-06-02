@@ -55,7 +55,6 @@ function Accounts() {
                 const res = await axios.get(`${VITE_API_URL}/api/accounts`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                console.log('Fetched accounts:', res.data);
                 setAccounts(res.data);
             } catch (err) {
                 console.error('Failed to fetch accounts:', err);
