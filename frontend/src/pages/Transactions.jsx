@@ -126,7 +126,6 @@ function Transactions() {
                     },
                 }),
             ]);
-            console.log("Transactions fetched:", transactionsResponse.data);
             setAccounts(accountsResponse.data);
             setTransactions(transactionsResponse.data);
             setCategories(categoriesResponse.data);
