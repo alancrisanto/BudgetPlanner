@@ -20,7 +20,7 @@ exports.getAccountById = async (req, res) => {
 }
 
 exports.createAccount = async (req, res) => {
-  try {
+    try {
         const { name } = req.body;
         const newAccount = await Account.create({
             user_id: req.user.id,
@@ -43,3 +43,22 @@ exports.deleteAccount = async (req, res) => {
         res.status(500).json({ message: 'Error deleting account', error: err.message });
     }
 };
+
+exports.updateAccount = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        const updatedAccount = await Account.findOneAndUpdate(
+            { _id: id, user_id: req.user.id },
+            { name },
+            { new: true }
+        );
+
+        if (!updatedAccount) return res.status(404).json({ message: 'Account not found' });
+
+        res.json(updatedAccount);
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating account', error: err.message });
+    }
+}
