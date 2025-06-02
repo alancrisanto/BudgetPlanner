@@ -4,6 +4,8 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ExpenseIncomeChart from '../components/charts/ExpenseIncomeChart';
 import CategoriesChart from '../components/charts/CategoriesChart';
+import { Pencil, Trash2 } from 'lucide-react';
+import Modal from '../components/Modal';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -39,20 +41,64 @@ function AccountDetails() {
     }, [id, user.token, isAuthenticated]);
 
     useEffect(() => {
-        const fetchTransactions = async () => {    
+        const fetchTransactions = async () => {   
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear(); 
+
             try {
                 const response = await axios.get(`${VITE_API_URL}/api/transactions/${id}`, {
                     headers: {
                         Authorization: `Bearer ${user.token}`
                     }
                 });
-                setTransactions(response.data);
+                const filteredTransactions = response.data.filter((transaction) => {
+                    const transactionDate = new Date(transaction.date);
+                    return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
+                }
+                ).sort((a, b) => new Date(a.date) - new Date(b.date));
+                const sortedTransactions = filteredTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+                setTransactions(sortedTransactions);
             } catch (err) {
                 setError(err.response ? err.response.data.message : 'Error fetching transactions');
             }
         };
         fetchTransactions();
     }, [id, user.token, isAuthenticated]);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const closeDeleteModal = () => setShowDeleteModal(false);
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`${VITE_API_URL}/api/accounts/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${user.token}`
+                }
+            });
+            navigate('/accounts');
+        }
+        catch (err) {
+            setError(err.response ? err.response.data.message : 'Error deleting account');
+        } finally {
+            closeDeleteModal();
+        }
+    }
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const closeEditModal = () => setShowEditModal(false);
+    const handleEdit = async () => {
+        try {
+            await axios.put(`${VITE_API_URL}/api/accounts/${id}`, { name: account.name }, {
+                headers: {
+                    Authorization: `Bearer ${user.token}`
+                }
+            });
+            setShowEditModal(false);
+            setAccount({ ...account, name: account.name });
+        } catch (err) {
+            setError(err.response ? err.response.data.message : 'Error updating account');
+        }
+    }
 
     return (
     <div className="flex flex-col min-h-screen p-4 sm:p-6">
@@ -64,14 +110,21 @@ function AccountDetails() {
         <div className="space-y-6 max-w-7xl mx-auto w-full">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold text-gray-800">{account.name}</h1>
-                <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2">
-                    Edit Account
-                </button>
             </div>
 
             {/* Account Summary */}
             <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Account Summary</h2>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-800">Account Summary</h2>
+                    <div className="flex items-center space-x-2">
+                        <button onClick={() => setShowEditModal(true)} className="hover:text-blue-700">
+                            <Pencil size={16} />
+                        </button>
+                        <button onClick={() => setShowDeleteModal(true)} className="hover:text-red-700">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                </div>
                 <div className="space-y-2 text-sm md:text-base text-gray-700">
                     <div className="flex justify-between">
                         <span className="font-medium text-gray-800">Total Income</span>
@@ -149,7 +202,39 @@ function AccountDetails() {
                 </button>
             </div>
         </div>
-    )}
+        )}
+
+        {/* Modal for editing account name */}
+        <Modal isOpen={showEditModal} onClose={closeEditModal} title="Edit Account Name">
+            <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                    Account Name
+                </label>
+                <input
+                    type="text"
+                    value={account?.name || ''}
+                    onChange={(e) => setAccount({ ...account, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex justify-end gap-4">
+                    <button onClick={handleEdit} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </Modal>
+
+        {/* Modal for confirming account deletion */}
+        <Modal isOpen={showDeleteModal} title="Delete Account" onClose={closeDeleteModal}>
+            <div className="space-y-4">
+                <p>Are you sure you want to delete this account? This action cannot be undone.</p>
+                <div className="flex justify-end gap-4">
+                    <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </Modal>
 </div>
 
 );
