@@ -19,9 +19,19 @@ function AccountDetails() {
     const [error, setError] = useState(null);
     const [ transactions, setTransactions ] = useState([]);
 
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    // Format current month and year for display
+    const currentMonthYear = selectedDate.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+    });
+    // Get previous and next month for navigation
+    const previousMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
+    const nextMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
+
     useEffect(() => {
         if (!isAuthenticated) { return; }
-
+        // Fetch account details
         const fetchAccount = async () => {
             try {
                 const response = await axios.get(`${VITE_API_URL}/api/accounts/${id}`, {
@@ -41,22 +51,23 @@ function AccountDetails() {
     }, [id, user.token, isAuthenticated]);
 
     useEffect(() => {
+        // Fetch transactions for the account
         const fetchTransactions = async () => {   
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear(); 
-
             try {
                 const response = await axios.get(`${VITE_API_URL}/api/transactions/${id}`, {
                     headers: {
                         Authorization: `Bearer ${user.token}`
                     }
                 });
+                // Filter transactions for the current (by default) or chosen month and year
+                const selectedMonth = selectedDate.getMonth();
+                const selectedYear = selectedDate.getFullYear();
+                // Filter transactions by selected month and year
                 const filteredTransactions = response.data.filter((transaction) => {
                     const transactionDate = new Date(transaction.date);
-                    return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
-                }
-                ).sort((a, b) => new Date(a.date) - new Date(b.date));
+                    return transactionDate.getMonth() === selectedMonth && transactionDate.getFullYear() === selectedYear;
+                });
+                // Sort transactions by date
                 const sortedTransactions = filteredTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
                 setTransactions(sortedTransactions);
             } catch (err) {
@@ -64,8 +75,9 @@ function AccountDetails() {
             }
         };
         fetchTransactions();
-    }, [id, user.token, isAuthenticated]);
+    }, [id, user.token, isAuthenticated, selectedDate]);
 
+    // Handle delete account
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const closeDeleteModal = () => setShowDeleteModal(false);
     const handleDelete = async () => {
@@ -84,6 +96,7 @@ function AccountDetails() {
         }
     }
 
+    // Handle edit account name
     const [showEditModal, setShowEditModal] = useState(false);
     const closeEditModal = () => setShowEditModal(false);
     const handleEdit = async () => {
@@ -100,6 +113,16 @@ function AccountDetails() {
         }
     }
 
+    // Disable next button if selected date is in the future
+    const disableNextButton = () => {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const selectedMonth = selectedDate.getMonth();
+        const selectedYear = selectedDate.getFullYear();
+        return selectedYear > currentYear || (selectedYear === currentYear && selectedMonth >= currentMonth);
+    };
+
     return (
     <div className="flex flex-col min-h-screen p-4 sm:p-6">
     {loading ? (
@@ -110,6 +133,12 @@ function AccountDetails() {
         <div className="space-y-6 max-w-7xl mx-auto w-full">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold text-gray-800">{account.name}</h1>
+                {/* Current Month */}
+                <div className="flex justify-center items-center gap-4">
+                    <button onClick={() => setSelectedDate(previousMonth)} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">← </button>
+                    <span className="text-gray-800 font-semibold">{currentMonthYear}</span>
+                    <button onClick={() => setSelectedDate(nextMonth)} disabled={disableNextButton()} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50">→</button>
+                </div>
             </div>
 
             {/* Account Summary */}
@@ -146,13 +175,13 @@ function AccountDetails() {
                 {/* Expense and Income Chart */}
                 <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses and Income</h2>
-                    <ExpenseIncomeChart transactions={transactions} />
+                    <ExpenseIncomeChart transactions={transactions} selectedDate={selectedDate} />
                 </div>
 
                 {/* Categories Chart */}
                 <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses by Category</h2>
-                    <CategoriesChart transactions={transactions} />
+                    <CategoriesChart transactions={transactions} selectedDate={selectedDate} />
                 </div>
             </div>
 
