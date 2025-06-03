@@ -92,7 +92,6 @@ function Accounts() {
             const res = await axios.post(`${VITE_API_URL}/api/accounts`, { name }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log('Account created:', res.data);
             setAccounts(prevAccounts => [...prevAccounts, res.data]);
 
             // Reset form and close modal
