@@ -123,6 +123,15 @@ function AccountDetails() {
         return selectedYear > currentYear || (selectedYear === currentYear && selectedMonth >= currentMonth);
     };
 
+    // calculate the total income and expenses for the current month
+    const totalIncome = transactions.reduce((acc, transaction) => {
+        return transaction.type === 'income' ? acc + transaction.amount : acc;
+    }
+, 0);
+    const totalExpenses = transactions.reduce((acc, transaction) => {
+        return transaction.type === 'expense' ? acc + transaction.amount : acc;
+    }, 0);
+
     return (
     <div className="flex flex-col min-h-screen p-4 sm:p-6">
     {loading ? (
@@ -157,16 +166,16 @@ function AccountDetails() {
                 <div className="space-y-2 text-sm md:text-base text-gray-700">
                     <div className="flex justify-between">
                         <span className="font-medium text-gray-800">Total Income</span>
-                        <span className="text-green-600 font-semibold">${account.income_total?.toFixed(2) || '0.00'}</span>
+                        <span className="text-green-600 font-semibold">${totalIncome.toFixed(2) || '0.00'}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="font-medium text-gray-800">Total Expenses</span>
-                        <span className="text-red-600 font-semibold">${account.expense_total?.toFixed(2) || '0.00'}</span>
+                        <span className="text-red-600 font-semibold">${totalExpenses.toFixed(2) || '0.00'}</span>
                     </div>
                     <hr className="my-2 border-gray-200" />
                     <div className="flex justify-between pt-2">
                         <span className="font-medium text-gray-800">Remainder</span>
-                        <span className="font-semibold">${(Number(account.income_total || 0) - Number(account.expense_total || 0)).toFixed(2)}</span>
+                        <span className="font-semibold">${(Number(totalIncome || 0) - Number(totalExpenses || 0)).toFixed(2)}</span>
                     </div>
                 </div>
             </div>
@@ -174,13 +183,13 @@ function AccountDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Expense and Income Chart */}
                 <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses and Income</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Expenses and Income</h2>
                     <ExpenseIncomeChart transactions={transactions} selectedDate={selectedDate} />
                 </div>
 
                 {/* Categories Chart */}
                 <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Expenses by Category</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Expenses by Category</h2>
                     <CategoriesChart transactions={transactions} selectedDate={selectedDate} />
                 </div>
             </div>
