@@ -81,7 +81,7 @@ exports.createTransaction = async (req, res) => {
         await account.save();
 
         // populate category and tags for the response
-        const populatedTransaction = await newTransaction.populate('category_id tags');
+        const populatedTransaction = await newTransaction.populate('account_id category_id tags');
 
         res.status(201).json(populatedTransaction);
     } catch (err) {
