@@ -1,15 +1,14 @@
 import { Chart } from "react-google-charts";
 
-function cumulativeDailyData(transactions) {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+function cumulativeDailyData(transactions, selectedDate) {
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
 
     // Filter transactions for current month and year
     const filtered = transactions
         .filter((tsx) => {
             const d = new Date(tsx.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
         })
         .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -48,8 +47,8 @@ function cumulativeDailyData(transactions) {
 }
 
 
-const ExpenseIncomeChart = ({ transactions }) => {
-    const data = cumulativeDailyData(transactions);
+const ExpenseIncomeChart = ({ transactions, selectedDate }) => {
+    const data = cumulativeDailyData(transactions, selectedDate);
 
     const options = {
         hAxis: { title: "Day" },
