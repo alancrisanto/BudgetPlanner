@@ -1,15 +1,14 @@
 import { Chart } from "react-google-charts";
 
-function calculateCategoryTotals(transactions) {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+function calculateCategoryTotals(transactions, selectedDate) {
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
 
     // Filter transactions for current month and year
     const filtered = transactions
         .filter((tsx) => {
             const d = new Date(tsx.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
         })
         .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -45,11 +44,11 @@ function calculateCategoryTotals(transactions) {
     return data;
 }
 
-const CategoriesChart = ({ transactions }) => {
-    const data = calculateCategoryTotals(transactions);
+const CategoriesChart = ({ transactions, selectedDate }) => {
+    const data = calculateCategoryTotals(transactions, selectedDate);
 
     const options = {
-        pieHole: 0,
+        pieHole: 0.4,
         legend: { position: "bottom" },
         pieSliceText: "label",
     };
