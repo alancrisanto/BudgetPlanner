@@ -36,8 +36,12 @@ exports.createAccount = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
     try {
         const { id } = req.params;
+        const Transaction = require('../models/Transaction');
+        // delete the account only if it belongs to the user
         const deleted = await Account.findOneAndDelete({ _id: id, user_id: req.user.id });
         if (!deleted) return res.status(404).json({ message: 'Account not found' });
+        // delete all transactions associated with this account
+        await Transaction.deleteMany({ account_id: id });
         res.json({ message: 'Account deleted' });
     } catch (err) {
         res.status(500).json({ message: 'Error deleting account', error: err.message });
