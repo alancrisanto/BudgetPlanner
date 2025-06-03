@@ -126,8 +126,11 @@ function Transactions() {
                     },
                 }),
             ]);
+            // Sort transactions by date
+            const sortedTransactions = transactionsResponse.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
             setAccounts(accountsResponse.data);
-            setTransactions(transactionsResponse.data);
+            setTransactions(sortedTransactions);
             setCategories(categoriesResponse.data);
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -313,7 +316,7 @@ function Transactions() {
                             });
 
                             return (
-                                <div key={transaction._id} className="flex justify-between items-start p-4 bg-white rounded-2xl shadow-md">
+                                <div key={transaction._id} className="flex justify-between items-start p-4 bg-white hover:bg-gray-100 rounded-2xl shadow-md">
                                     {/* Left arrow icon */}
                                     <div className="flex flex-col items-center mr-4">
                                         <div className={`text-2xl font-bold ${arrowColor}`}>{arrow}</div>
