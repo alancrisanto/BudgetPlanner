@@ -54,11 +54,13 @@ const NavBar = ({ mobileOpen, setMobileOpen }) => {
                     {navLinks}
                 </div>
                 <div className="px-4 pb-4 mt-auto border-t border-gray-700">
-                    <Link to="/settings" onClick={() => setMobileOpen(false)} className="block py-3 text-sm hover:text-blue-400">
-                        <div className="flex items-center gap-2">
-                            <Settings size={18} /> Settings
-                        </div>
-                    </Link>
+                    {isAuthenticated && (
+                        <Link to="/settings" onClick={() => setMobileOpen(false)} className="block py-3 text-sm hover:text-blue-400">
+                            <div className="flex items-center gap-2">
+                                <Settings size={18} /> Settings
+                            </div>
+                        </Link>
+                    )}
                     <p className="text-xs text-gray-400 mt-2">&copy; {new Date().getFullYear()} BudgetPlanner</p>
                 </div>
             </div>
@@ -72,11 +74,13 @@ const NavBar = ({ mobileOpen, setMobileOpen }) => {
                     {navLinks}
                 </div>
                 <div className="px-4 pb-4 mt-auto border-t border-gray-700">
-                    <Link to="/settings" onClick={() => setMobileOpen(false)} className="block py-3 text-sm hover:text-blue-400">
-                        <div className="flex items-center gap-2">
-                            <Settings size={18} /> Settings
-                        </div>
-                    </Link>
+                    {isAuthenticated && (
+                        <Link to="/settings" onClick={() => setMobileOpen(false)} className="block py-3 text-sm hover:text-blue-400">
+                            <div className="flex items-center gap-2">
+                                <Settings size={18} /> Settings
+                            </div>
+                        </Link>
+                    )}
                     <p className="text-xs text-gray-400 mt-2">&copy; {new Date().getFullYear()} BudgetPlanner CSE499</p>
                 </div>
             </div>

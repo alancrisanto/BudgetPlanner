@@ -13,10 +13,10 @@ function Register() {
 	const navigate = useNavigate();
 
 	const onSubmit = async (data) => {
-		const { email, password } = data;
-		const userData = { email, password };
+		const { email, password, username, firstName, lastName } = data;
+		const userData = { email, password, username, firstName, lastName };
 		try {
-			const res =await signup(userData);
+			const res = await signup(userData);
 			if (res && res.status === 201) {
 				navigate("/login");
 			}
@@ -36,6 +36,29 @@ function Register() {
 								{registerErrors}
 							</span>
 						)}
+					</div>
+					<div>
+						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="firstName">
+							First Name
+						</label>
+						<input {...register("firstName", { required: true })} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							id="firstName" />
+					</div>
+					<div>
+						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="lastName">
+							Last Name
+						</label>
+						<input {...register("lastName", { required: true })} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							id="lastName" />
+
+					</div>
+					<div>
+						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="username">
+							Username
+						</label>
+						<input {...register("username", { required: true })} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+							id="username" />
+
 					</div>
 					<div>
 						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="email">
@@ -81,6 +104,8 @@ function Register() {
 							<span className="text-red-500 text-xs">{errors.confirmPassword.message || "Confirm your password"}</span>
 						)}
 					</div>
+
+
 					<button
 						type="submit"
 						className="w-full py-2 mt-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 transition"
