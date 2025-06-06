@@ -2,6 +2,8 @@ import Dashcoins from "../components/DashCoins";
 import { useAuth } from "../context/AuthContext";
 import React, { useEffect, useState } from "react";
 import ExpPerAcctChart from '../components/charts/ExpPerAcctChart';
+import CategoriesAcctsChart from '../components/charts/CategoriesAcctsChart';
+import CategoriesMonthsChart from '../components/charts/CategoriesMonthsChart';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,33 +78,59 @@ const Dashboard = () => {
 			<p className="text-gray-700">This is your Financial Overview Report</p>
 			<Dashcoins />
 
-			{loading ? (
+				{loading ? (
 				<div className="flex items-center justify-center h-64">
 					<p className="text-gray-500">Loading...</p>
 				</div>
-			) : error ? (
+				) : error ? (
 				<div className="flex items-center justify-center h-64">
 					<p className="text-red-500">{error}</p>
 				</div>
-			) : accounts.length > 0 ? (
-				<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 mt-6">
-					{/* Display balances of accounts */}
-					<h3 className="text-xl font-semibold mb-4">Balances Accounts</h3>
-					{accounts.map((account) => (
-						<div key={account._id} className="flex justify-between items-center py-2">
-							<span className="text-lg font-semibold">{account.name}</span>
-							<span className={`text-lg font-medium ${
-								account.remainder < 0 ? 'text-red-600' : 'text-gray-700'}`}>${account.remainder.toFixed(2)}</span>
-						</div>
-					))}
+				) : (
+				<div className="flex flex-col lg:flex-row gap-6 mt-6">
+					{/* Balances Card */}
+					{accounts.length > 0 ? (
+					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+						<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
+						{accounts.map((account) => (
+							<div key={account._id} className="flex justify-between items-start py-4">
+							{/* Account name on the left */}
+							<div className="text-lg font-medium text-gray-800 w-1/2">
+								{account.name}
+							</div>
+
+							{/* Numbers on the right */}
+							<div className="text-right w-1/2">
+								<p className="text-base font-medium">{account.income_total.toFixed(2)}</p>
+								<p className="text-base font-medium">{account.expense_total.toFixed(2)}</p>
+								<hr className="my-2 w-24 ml-auto border-gray-300" />
+								<p className="text-base font-medium">${account.remainder.toFixed(2)}</p>
+							</div>
+							</div>
+						))}
+					</div>
+					) : (
+					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+						<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
+						<p className="text-gray-500 text-center">No accounts found.</p>
+					</div>
+					)}
+
+					{/* This Month Category Chart */}
+					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+					<h2 className="text-lg font-semibold text-gray-800 mb-4">Spending by Category This Month</h2>
+					<CategoriesAcctsChart transactions={transactions} />
+					</div>
+					{/* Previous Months Category Chart */}
+					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+					<h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Spending by Category</h2>
+					<CategoriesMonthsChart transactions={transactions} />
+					</div>
 				</div>
-			) : (
-				<div className="flex items-center justify-center h-64">
-				<p className="text-gray-500">No accounts found.</p>
-				</div>
-			)}
+				)}
+
 				<div className="mt-6 flex flex-col lg:flex-row gap-6">
-					{/* Display the expenses per account chart */}
+					{/* Daily expenses per account chart */}
 					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 w-full lg:w-2/3 mb-6">
 						<h2 className="text-lg font-semibold text-gray-800 mb-4">Daily Expenses per Account</h2>
 						<ExpPerAcctChart transactions={transactions} />
@@ -115,7 +143,7 @@ const Dashboard = () => {
 					<ul className="space-y-4">
 						{recentTransactions.map((transaction) => (
 							<li key={transaction._id}
-								className="flex justify-between items-start p-3 rounded-md hover:bg-gray-100 transition-transform duration-200 hover:scale-[1.01]">
+								className="flex justify-between items-start p-2 rounded-md hover:bg-gray-100 transition-transform duration-200 hover:scale-[1.01]">
 								<div>
 									<span className="font-medium text-gray-800">{transaction.name}</span>
 									<div className="text-sm text-gray-600">
@@ -142,8 +170,9 @@ const Dashboard = () => {
 					</ul>
 				</div>
 			) : (
-				<div className="flex items-center justify-center h-64">
-					<p className="text-gray-500">No recent transactions found.</p>
+				<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1 mb-6">
+					<h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h2>
+					<p className="text-gray-500 text-center">No recent transactions found.</p>
 				</div>
 			)}
 			</div>

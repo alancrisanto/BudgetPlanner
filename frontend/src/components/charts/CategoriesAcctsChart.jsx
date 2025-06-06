@@ -12,40 +12,35 @@ const categoryColorMap = {
 	Other: '#fdd835',
 };
 
-function calculateCategoryTotals(transactions, selectedDate) {
-    const selectedMonth = selectedDate.getMonth();
-    const selectedYear = selectedDate.getFullYear();
+function calculateCategoryTotalsAllAccounts(transactions) {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
 
-    // Filter transactions for current month and year
+    // Filter transactions for the current month and year
     const filtered = transactions
         .filter((tsx) => {
             const d = new Date(tsx.date);
-            return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
-        })
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+            return (
+                tsx.type === "expense" &&
+                d.getMonth() === currentMonth &&
+                d.getFullYear() === currentYear
+            );
+        });
 
-    // Initialize category totals
-    const categoryTotals = {
-        Groceries: 0,
-        Rent: 0,
-        Utilities: 0,
-        Takeout: 0,
-        Transportation: 0,
-        Entertainment: 0,
-        Health: 0,
-        Shopping: 0,
-        Other: 0,
-    };
+    const categoryTotals = {};
 
     // Calculate totals for each category
     filtered.forEach((tsx) => {
-        const category = tsx.category_id?.name;
-        if (category && category in categoryTotals) {
-            categoryTotals[category] += tsx.amount;
+        const category = tsx.category_id?.name || "Other";
+        const amount = Math.abs(parseFloat(tsx.amount));
+        if (!categoryTotals[category]) {
+            categoryTotals[category] = 0;
         }
+        categoryTotals[category] += amount;
     });
 
-    // Prepare data for Google Charts
+    // Prepare data for the chart
     const data = [["Category", "Total"]];
     Object.entries(categoryTotals).forEach(([category, total]) => {
         if (total > 0) {
@@ -56,9 +51,10 @@ function calculateCategoryTotals(transactions, selectedDate) {
     return data;
 }
 
-const CategoriesChart = ({ transactions, selectedDate }) => {
-    const data = calculateCategoryTotals(transactions, selectedDate);
+const CategoriesAcctsChart = ({ transactions, selectedDate }) => {
+    const data = calculateCategoryTotalsAllAccounts(transactions, selectedDate);
 
+    // Get the colors for each category
     const displayedCategories = data.slice(1).map(row => row[0]);
     const categoryColors = displayedCategories.map(cat => categoryColorMap[cat] || '#d4e157');
 
@@ -66,20 +62,20 @@ const CategoriesChart = ({ transactions, selectedDate }) => {
         pieHole: 0.4,
         legend: { position: "bottom" },
         pieSliceText: "label",
+        chartArea: { width: "90%", height: "80%" },
         colors: categoryColors,
     };
 
-    // Ensure the data has at least one row for the chart to render
     if (data.length <= 1) {
         return (
-            <div className={"w-full h-32 flex items-center justify-center"}>
+            <div className="w-full h-32 flex items-center justify-center">
                 <p className="text-gray-500">No data available.</p>
             </div>
         );
     }
 
     return (
-        <div className={"w-full h-96 flex items-center justify-center"}>
+        <div className="w-full h-96 flex items-center justify-center">
             <Chart
                 chartType="PieChart"
                 width="100%"
@@ -91,4 +87,4 @@ const CategoriesChart = ({ transactions, selectedDate }) => {
     );
 };
 
-export default CategoriesChart;
+export default CategoriesAcctsChart;

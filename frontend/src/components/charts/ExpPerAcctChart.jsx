@@ -51,7 +51,11 @@ function weeklyExpensesByAccount (transactions) {
         }
         chartData.push(row);
     }
-    return chartData.length > 1 ? chartData : [['Day', 'No Data'], ['-', 0]];
+    
+    if (accountsList.length === 0) {
+        return null;
+    }
+    return chartData;
 };
 
 const ExpPerAcctChart = ({ transactions }) => {
@@ -64,12 +68,17 @@ const ExpPerAcctChart = ({ transactions }) => {
 		vAxis: { title: 'Expenses' },
 		isStacked: false,
 		bar: { groupWidth: '60%' },
-        colors: ['#64b5f6', '#ffb74d', '#ba68c8', '#ff7043', '#90a4ae', '#fdd835', '#4dd0e1']
+        colors: ['#ffb74d', '#ba68c8', '#ff7043', '#90a4ae', '#fdd835', '#4dd0e1', '#64b5f6']
     };
 
     // Ensure the data has at least one row for the chart to render
-    if (data.length <= 1) {
-        return <div className="text-gray-500">No data available.</div>;
+    if (!data) {
+        return (
+            <div className="w-full h-32 flex items-center justify-center">
+                <div className="text-gray-500">No data available.</div>
+            </div>
+        )
+        
     }
 
     return (
