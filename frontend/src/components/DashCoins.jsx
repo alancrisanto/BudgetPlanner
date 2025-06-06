@@ -11,7 +11,6 @@ function DashCoins() {
   const fetchCoinData = async () => {
     try {
       const coins = await fetchCoins();
-      console.log('Fetched coins:', coins);
       setCoins(coins);
     } catch (error) {
       console.error('Error fetching coin data:', error);
