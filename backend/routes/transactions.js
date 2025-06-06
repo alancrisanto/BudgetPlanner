@@ -8,9 +8,11 @@ const {
     getTransactions,
     createTransaction,
     deleteTransaction,
-    updateTransaction
-} = require('../controllers/TransactionController');
+    updateTransaction,
+    getLastTransactions
+} = require('../controllers/transactionController');
 
+router.get('/last', auth, getLastTransactions); // last 5 transactions
 router.get('/', auth, getTransactions); // by user
 router.get('/:id', auth, getTransactionsByAccount); // by account
 router.post('/', auth, createTransaction);
