@@ -1,5 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Account = require('../models/Account');
+const Tag = require('../models/Tag');
+const Category = require('../models/Category');
 const mongoose = require('mongoose');
 
 exports.getTransactionsByAccount = async (req, res) => {
@@ -36,8 +38,9 @@ exports.getTransactions = async (req, res) => {
 
 
 exports.createTransaction = async (req, res) => {
+    console.log('Full request body:', req.body);
     try {
-        const {
+        let {
             account_id,
             type,
             amount,
@@ -51,9 +54,7 @@ exports.createTransaction = async (req, res) => {
             end_date
         } = req.body;
 
-
-        const newTransaction = await Transaction.create({
-            account_id,
+        console.log("incoming transaction", account_id,
             type,
             amount,
             date,
@@ -63,9 +64,54 @@ exports.createTransaction = async (req, res) => {
             recurring,
             frequency,
             next_date,
+            end_date)
+
+         const categoryName = category_id?.trim().toLowerCase();
+            let category = await Category.findOne({ name: categoryName });
+            if (!category) {
+            category = await Category.create({ name: categoryName });
+            }
+            let category_ID = category._id
+            console.log("Category ID is", category_ID)
+
+        const tagIds = [];
+
+        for (const tagName of tags) {
+        const trimmedName = tagName.trim().toLowerCase(); // normalize tag
+        let tag = await Tag.findOne({ name: trimmedName });
+
+        if (!tag) {
+            tag = await Tag.create({ name: trimmedName });
+        }
+
+        tagIds.push(tag._id);
+        }
+
+        const newTransaction = await Transaction.create({
+            account_id,
+            type,
+            amount,
+            date,
+            category_id: category_ID,
+            name, 
+            tags : tagIds,
+            recurring,
+            frequency,
+            next_date,
             end_date
 
         });
+
+        console.log("new transaction",  type,
+            amount,
+            date,
+            category_id,
+            name,
+            tagIds,
+            recurring,
+            frequency,
+            next_date,
+            end_date)
 
         // Update account totals
         const account = await Account.findById(account_id);
@@ -85,6 +131,7 @@ exports.createTransaction = async (req, res) => {
 
         res.status(201).json(populatedTransaction);
     } catch (err) {
+        console.error(err)
         res.status(500).json({ message: 'Error creating transaction', error: err.message });
     }
 };

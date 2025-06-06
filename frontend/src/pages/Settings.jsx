@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import UserSettings from '../components/settings/UserSettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
+import { Helmet } from 'react-helmet-async';
 
 const tabs = [
     { id: 'account', label: 'Account' },
@@ -20,7 +21,29 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+
+        <>
+            <Helmet>
+                <title>Settings | Budget Planner</title>
+                <meta name="description" content="Manage your BudgetPlanner profile settings, update preferences, and configure your financial tools." />
+                <meta name="keywords" content="settings, user settings, profile, preferences, account configuration, budgetplanner" />
+                <meta name="author" content="Veihi Joy Tupai,  Cameron Pedro, Rama Krishna Bhagi Perez, Bamutesiza Ronald" />
+
+                <meta property="og:title" content="BudgetPlanner | Settings" />
+                <meta property="og:description" content="Customize your BudgetPlanner experience in your user settings." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="" />
+                <meta property="og:image" content="" />
+
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="BudgetPlanner | Settings" />
+                <meta name="twitter:description" content="Adjust your account and preferences on BudgetPlanner." />
+                <meta name="twitter:image" content="" />
+
+                <link rel="canonical" href="" />
+            </Helmet>
+
+            <div className="p-4 sm:p-8 max-w-4xl mx-auto">
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">Settings</h1>
 
             {/* Dropdown on mobile */}
@@ -57,5 +80,7 @@ export default function SettingsPage() {
             {/* Tab content */}
             <div>{renderContent()}</div>
         </div>
+        </>
+        
     );
 }

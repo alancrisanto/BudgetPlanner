@@ -9,7 +9,7 @@ const {
     createTransaction,
     deleteTransaction,
     updateTransaction
-} = require('../controllers/TransactionController');
+} = require('../controllers/transactionController');
 
 router.get('/', auth, getTransactions); // by user
 router.get('/:id', auth, getTransactionsByAccount); // by account

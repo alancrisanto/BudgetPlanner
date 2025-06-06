@@ -1,9 +1,30 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 function Home() {
 	return (
-		<section className="bg-white">
+		<>
+			<Helmet>
+				<title>Home | Budget Planner</title>
+				<meta name="description" content="Plan your budget effectively with BudgetPlanner. Manage expenses, income, and more!" />
+				<meta name="keywords" content="budget planner, money manager, expense tracker, personal finance" />
+				<meta name="author" content="Veihi Joy Tupai,  Cameron Pedro, _Rama Krishna Bhagi Perez, Bamutesiza Ronald" />
+
+				{/* Social Media SEO */}
+				<meta property="og:title" content="BudgetPlanner | Home" />
+				<meta property="og:description" content="Plan your budget effectively with BudgetPlanner." />
+				<meta property="og:type" content="website" />
+				<meta property="og:url" content="" />
+				<meta property="og:image" content="" />
+
+				{/* Twitter SEO */}
+				<meta name="twitter:title" content="BudgetPlanner | Home" />
+				<meta name="twitter:description" content="Plan your budget effectively with BudgetPlanner." />
+				<meta name="twitter:card" content="" />
+				<meta name="twitter:image" content="" />
+			</Helmet>
+			<section className="bg-white">
 			<div className="mx-auto w-full max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
 				<div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
 
@@ -39,7 +60,9 @@ function Home() {
 				</div>
 			</div>
 		</section>
-	);
+	
+		</>
+		);
 }
 
 export default Home;
