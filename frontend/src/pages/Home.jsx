@@ -51,35 +51,35 @@ function Home() {
   {/* Card 2: Video & Icons */}
   <div className="flex flex-col h-full justify-between px-4">
     <div className="bg-[#f6f5f3] rounded-3xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-      <div className="rounded-full bg-white p-4 shadow-md hover:shadow-lg transition">
+      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
         <img src="/finance-card.svg" alt="" />
       </div>
-      <div className="rounded-full bg-white p-4 shadow-md hover:shadow-lg transition">
+      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
         <img src="/finance-bar.svg" alt="" />
       </div>
-      <div className="rounded-full bg-white p-4 shadow-md hover:shadow-lg transition">
+      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
         <img src="/finance-coin.svg" alt="" />
       </div>
-      <div className="rounded-full bg-white p-4 shadow-md hover:shadow-lg transition">
+      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
         <img src="/reload.svg" alt="" />
       </div>
     </div>
-    <div className="w-full rounded-lg mt-auto">
+    <div className="w-full rounded-lg h-full">
       <video
         src="/video.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className="rounded-3xl w-full h-auto max-h-64 object-cover"
+        className="rounded-3xl w-full h-full object-cover"
       />
     </div>
   </div>
 
   {/* Card 3: Phone Image */}
-  <div className="flex items-end justify-center h-full">
+  <div className="flex items-end justify-center h-full bg-[#f6f5f3] rounded-lg p-4">
     <img
-      className="max-h-100 h-auto object-contain"
+      className="max-h-80 h-full object-fill"
       src="/phone.png"
       alt="Phone"
     />
