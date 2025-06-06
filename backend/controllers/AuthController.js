@@ -46,7 +46,8 @@ exports.login = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        username: user.username
+        username: user.username,
+        firstName: user.firstName,
       }
     });
   } catch (err) {
