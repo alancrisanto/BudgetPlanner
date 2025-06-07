@@ -76,7 +76,7 @@ const Dashboard = () => {
 				<img className="max-w-[48px] animate-bounce" src="/money-wings.svg" alt="" />
 			</div>
 			<p className="text-gray-700">This is your Financial Overview Report</p>
-			<Dashcoins />
+
 
 				{loading ? (
 				<div className="flex items-center justify-center h-64">
@@ -176,6 +176,8 @@ const Dashboard = () => {
 				</div>
 			)}
 			</div>
+
+			<Dashcoins />
 		</div>
 	);
 };
