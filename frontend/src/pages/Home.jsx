@@ -21,7 +21,8 @@ function Home() {
 						<div className="mt-6 flex justify-center lg:justify-start">
 							<Link
 								className="inline-block rounded border border-indigo-600 bg-indigo-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
-								to="/login">
+								to="/login"
+							>
 								Get Started
 							</Link>
 						</div>
@@ -36,60 +37,77 @@ function Home() {
 						/>
 					</div>
 				</div>
-<div className="grid lg:grid-cols-3 gap-4 px-4 py-12 items-stretch">
-  {/* Card 1 */}
-  <div className="flex flex-col justify-between gap-4 rounded-lg bg-[#f6f5f3] px-8 pt-8 shadow-md text-center h-full">
-    <h3 className="text-3xl font-bold text-indigo-600">
-      Everything you need to master your money
-    </h3>
-    <p>Simple, Smart & Secure</p>
-    <div className="mt-auto">
-      <img src="/savings-card.jpg" alt="" className="w-full h-auto max-h-64 object-contain" />
-    </div>
-  </div>
+				{/* Grid section */}
+				<div className="grid lg:grid-cols-3 gap-4 px-4 pt-16 pb-4 items-stretch">
+					{/* Card 1 */}
+					<div className="flex flex-col justify-between gap-4 rounded-lg bg-[#f6f5f3] px-8 pt-8 shadow-md text-center h-full">
+						<h3 className="text-3xl font-bold text-indigo-600">Everything you need to master your money</h3>
+						<p>Simple, Smart & Secure</p>
+						<div className="mt-auto">
+							<img src="/savings-card.jpg" alt="" className="w-full h-auto max-h-64 object-contain" />
+						</div>
+					</div>
 
-  {/* Card 2: Video & Icons */}
-  <div className="flex flex-col h-full justify-between px-4">
-    <div className="bg-[#f6f5f3] rounded-3xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
-        <img src="/finance-card.svg" alt="" />
-      </div>
-      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
-        <img src="/finance-bar.svg" alt="" />
-      </div>
-      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
-        <img src="/finance-coin.svg" alt="" />
-      </div>
-      <div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
-        <img src="/reload.svg" alt="" />
-      </div>
-    </div>
-    <div className="w-full rounded-lg h-full">
-      <video
-        src="/video.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="rounded-3xl w-full h-full object-cover"
-      />
-    </div>
-  </div>
+					{/* Card 2: Video & Icons */}
+					<div className="flex flex-col h-full justify-between px-4">
+						<div className="bg-[#f6f5f3] rounded-3xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+							<div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
+								<img src="/finance-card.svg" alt="" />
+							</div>
+							<div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
+								<img src="/finance-bar.svg" alt="" />
+							</div>
+							<div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
+								<img src="/finance-coin.svg" alt="" />
+							</div>
+							<div className="rounded-full bg-white p-2 shadow-md hover:shadow-lg transition">
+								<img src="/reload.svg" alt="" />
+							</div>
+						</div>
+						<div className="w-full rounded-lg h-full">
+							<video
+								src="/video.mp4"
+								autoPlay
+								loop
+								muted
+								playsInline
+								className="rounded-3xl w-full h-full object-cover"
+							/>
+						</div>
+					</div>
 
-  {/* Card 3: Phone Image */}
-  <div className="flex items-end justify-center h-full bg-[#f6f5f3] rounded-lg p-4">
-    <img
-      className="max-h-80 h-full object-fill"
-      src="/phone.png"
-      alt="Phone"
-    />
-  </div>
-</div>
+					{/* Card 3: Phone Image */}
+					<div className="flex items-end justify-center h-full bg-indigo-400 rounded-lg p-4">
+						<img className="max-h-80 h-full object-fill" src="/phone.png" alt="Phone" />
+					</div>
+				</div>
 
+				<div className="grid grid-cols-5 gap-4 px-4">
+					<div className="col-span-5 lg:col-span-2 bg-indigo-400 rounded-lg p-8 shadow-md">
+						<div className="flex items-start">
+							<img className="max-w-6" src="star.svg" alt="" />
+							<img className="max-w-6" src="star.svg" alt="" />
+							<img className="max-w-6" src="star.svg" alt="" />
+							<img className="max-w-6" src="star.svg" alt="" />
+							<img className="max-w-6" src="star.svg" alt="" />
+						</div>
+						<p className="text-md py-2 text-white">
+							"Don't know where your money is going? With this app, you can get your family budget in order."
+						</p>
+						<p className="text-sm text-white">- Gorchakov, App Store Slide 2 of 3.</p>
+					</div>
+					<div className="col-span-5 lg:col-span-3 bg-[#f6f5f3] rounded-lg p-8 shadow-md">
+						<h3 className="text-2xl font-bold text-indigo-600 pb-2">Track your monthly spending and more</h3>
+						<p>
+							Review your transactions, track your spending by category and receive monthly insights that help you
+							better understand your money habits.
+						</p>
+					</div>
+				</div>
 				{/* Newsletter */}
-				<div className="flex items-center justify-center px-4 py-12">
-					<div className="text-center max-w-4xl">
-						<h1 className="text-4xl sm:text-5xl font-bold text-indigo-800 leading-tight">
+				<div className="flex items-center justify-center px-4 py-16">
+					<div className="text-center max-w-3xl">
+						<h1 className="text-5xl sm:text-4xl font-bold text-indigo-800 leading-tight">
 							<span className="font-bold text-transparent bg-clip-text bg-gradient-to-b from-indigo-600 to-indigo-500">
 								Subscribe to our newsletter and get Weekly budgeting tips directly in your inbox
 							</span>
