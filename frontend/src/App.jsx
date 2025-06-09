@@ -18,6 +18,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 import { useState } from "react";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function AppLayout() {
 	const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,6 +52,10 @@ function AppLayout() {
 						<Route path="/register" element={<Register />} />
 						<Route path="/forgot-password" element={<ForgotPassword />} />
 						<Route path="/reset-password/:token" element={<ResetPassword />} />
+						<Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+
+						<Route path="/TermsOfService" element={<TermsOfService />} />
+
 					</Routes>
 				</main>
 			</div>

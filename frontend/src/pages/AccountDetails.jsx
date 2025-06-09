@@ -161,8 +161,8 @@ function AccountDetails() {
                         <h1 className="text-2xl font-semibold text-gray-800">{account.name}</h1>
                     </div>
                     <div className="flex justify-end">
-                        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-4">
-                            <Plus size={16} /> Add Transaction
+                        <button onClick={() => setShowModal(true)} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
+                            Add Transaction
                         </button>
                     </div>
 

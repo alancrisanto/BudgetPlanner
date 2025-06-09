@@ -18,8 +18,14 @@ function Register() {
 		try {
 			const res = await signup(userData);
 			if (res && res.status === 201) {
+				localStorage.setItem("registrationSuccess", JSON.stringify({
+					email,
+					password
+				}));
 				navigate("/login");
 			}
+
+
 		} catch (error) {
 			console.error("Registration failed:", error);
 		}
