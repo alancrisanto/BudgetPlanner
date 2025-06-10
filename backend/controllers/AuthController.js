@@ -6,15 +6,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { email, password, username, firstName, lastName } = req.body;
+  let { email, password, username, firstName, lastName } = req.body;
+  email = email.trim();
+  username = username.trim();
+
   console.log('Register body:', req.body);
   try {
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({
+      $or: [
+        { email: { $regex: new RegExp(`^${email}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${username}$`, 'i') } }
+      ]
+    });
+
+
     if (userExists) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({ email, password: hashedPassword, username, firstName, lastName });
+    const newUser = await User.create({
+      email,
+      username,
+      password: hashedPassword,
+      firstName,
+      lastName
+    });
 
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (err) {
@@ -23,12 +39,19 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const input = req.body.email.trim().toLowerCase();
+  const password = req.body.password;
 
   try {
     const user = await User.findOne({
-      $or: [{ email: email }, { username: email }]  // `email` here could be a username
+      $or: [
+        { email: { $regex: new RegExp(`^${input}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${input}$`, 'i') } }
+      ]
     });
+
+
+
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid email/username or password' });

@@ -1,119 +1,63 @@
-import { Chart } from "react-google-charts";
-import React, { useState } from "react";
+import React from "react";
 
-const categoryColorMap = {
-	Groceries: '#42a5f5',
-	Rent:  '#26c6da',
-	Utilities: '#ab47bc',
-	Takeout: '#66bb6a',
-	Transportation: '#ffa726',
-	Entertainment: '#ef5350',
-	Health: '#d4e157',
-	Shopping: '#8d6e63',
-	Other: '#fdd835',
-};
+function getTopCategoriesPerMonth(transactions, monthCount = 5) {
+    const now = new Date();
+    const results = [];
 
-function calculateCategoryTotalsAllAccountsMonths(transactions, selectedDate) {
-    const selectedMonth = selectedDate.getMonth();
-    const selectedYear = selectedDate.getFullYear();
+    for (let i = 0; i < monthCount; i++) {
+        const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const start = new Date(target.getFullYear(), target.getMonth(), 1);
+        const end = new Date(target.getFullYear(), target.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    const filtered = transactions
-        .filter((tsx) => {
-            const d = new Date(tsx.date);
+        const filtered = transactions.filter((t) => {
+            const d = new Date(t.date);
             return (
-                tsx.type === "expense" &&
-                d.getMonth() === selectedMonth &&
-                d.getFullYear() === selectedYear
+                t.type === "expense" &&
+                d >= start && d <= end
             );
         });
 
-    const categoryTotals = {};
+        const categoryMap = {};
+        filtered.forEach((t) => {
+            const cat = t.category_id?.name || "Other";
+            if (!categoryMap[cat]) categoryMap[cat] = { total: 0, count: 0 };
+            categoryMap[cat].total += Math.abs(t.amount);
+            categoryMap[cat].count += 1;
+        });
 
-    filtered.forEach((tsx) => {
-        const category = tsx.category_id?.name || "Other";
-        const amount = Math.abs(parseFloat(tsx.amount));
-        if (!categoryTotals[category]) {
-            categoryTotals[category] = 0;
-        }
-        categoryTotals[category] += amount;
-    });
+        const topCategory = Object.entries(categoryMap)
+            .sort((a, b) => b[1].total - a[1].total)[0];
 
-    const data = [["Category", "Total"]];
-    Object.entries(categoryTotals).forEach(([category, total]) => {
-        if (total > 0) {
-            data.push([category, total]);
-        }
-    });
-    return data;
+        results.push({
+            month: start.toLocaleString("default", { month: "long", year: "numeric" }),
+            category: topCategory?.[0] || "No data",
+            total: topCategory?.[1]?.total || 0,
+            count: topCategory?.[1]?.count || 0,
+        });
+    }
+
+    return results;
 }
 
 const CategoriesMonthsChart = ({ transactions }) => {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-
-    // Generate the list of months for the dropdown 
-    const monthsList = []
-    for (let i = currentMonth - 1; i >= 0; i--) {
-		const date = new Date(currentYear, i, 1);
-		const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-		const label = date.toLocaleString("default", { month: "long", year: "numeric" });
-		monthsList.push({ value, label });
-	}
-
-    // Start with the previous month
-    const previousMonth = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-    const [selectedMonth, setSelectedMonth] = useState(previousMonth);
-
-    // Parse the selected month to get the date
-    const [year, month] = selectedMonth.split("-").map(Number);
-    const selectedDate = new Date(year, month - 1, 1);
-
-    // Calculate the category totals for the selected month
-    const data = calculateCategoryTotalsAllAccountsMonths(transactions, selectedDate);
-
-    // Get the colors for each category
-    const displayedCategories = data.slice(1).map(row => row[0]);
-    const categoryColors = displayedCategories.map(cat => categoryColorMap[cat] || '#d4e157');
-
-    const options = {
-        pieHole: 0.4,
-        legend: { position: "bottom" },
-        pieSliceText: "label",
-        chartArea: { width: "90%", height: "80%" },
-        colors: categoryColors
-    };
-
-    if (data.length <= 1) {
-        return (
-            <div className="w-full h-32 flex items-center justify-center">
-                <p className="text-gray-500">No data available.</p>
-            </div>
-        );
-    }
+    const monthlyTopCategories = getTopCategoriesPerMonth(transactions, 5);
 
     return (
-        <div className="w-full">
-			<div className="flex items-center justify-between mb-4">
-				<select value={selectedMonth}
-					onChange={(e) => setSelectedMonth(e.target.value)}
-					className="border rounded px-3 py-1 text-sm text-gray-700">
-					{monthsList.map((month) => (
-                        <option key={month.value} value={month.value}>
-                            {month.label}
-                        </option>
-                    ))}
-				</select>
-            </div>
-            <div className="w-full h-96 flex items-center justify-center">
-                <Chart
-                    chartType="PieChart"
-                    width="100%"
-                    height="100%"
-                    data={data}
-                    options={options}
-                />
-            </div>
+        <div>
+            <ul className="space-y-4">
+                {monthlyTopCategories.map(({ month, category, total, count }) => (
+                    <li key={month} className="flex justify-between items-start p-2 rounded-md hover:bg-gray-100 transition duration-150">
+                        <div>
+                            <span className="font-medium text-gray-800">{category}</span>
+                            <div className="text-sm text-gray-500">{count} transaction{count !== 1 ? "s" : ""}</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-base font-semibold text-gray-800">${total.toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">{month}</div>
+                        </div>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };

@@ -127,8 +127,8 @@ function Home() {
 						</div>
 
 						<p className="text-sm text-indigo-700 mt-4">
-							By subscribing you accept our <span className="underline cursor-pointer">Terms of Service</span> and{" "}
-							<span className="underline cursor-pointer">Privacy Policy</span>.
+							By subscribing you accept our <span className="underline cursor-pointer"><a href="/TermsOfService">Terms of Service</a></span> and{" "}
+							<span className="underline cursor-pointer"><a href="/PrivacyPolicy">Privacy Policy</a></span>.
 						</p>
 					</div>
 				</div>

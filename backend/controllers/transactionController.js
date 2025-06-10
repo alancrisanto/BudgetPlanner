@@ -15,24 +15,28 @@ exports.getTransactionsByAccount = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const userId = req.user.id;
-        // Find all accounts for the user
         const accounts = await Account.find({ user_id: userId });
         if (!accounts || accounts.length === 0) {
             return res.status(200).json([]);
         }
-        // Find all transactions for the user's accounts
-        const transactions = await Transaction.find({ account_id: { $in: accounts.map(account => account._id) } })
-            .populate('category_id')
-            .populate('tags')
-            .populate('account_id');
-        if (!transactions || transactions.length === 0) {
-            return res.status(200).json([]);
+
+        const query = { account_id: { $in: accounts.map(a => a._id) } };
+
+        if (req.query.startDate && req.query.endDate) {
+            query.date = {
+                $gte: new Date(req.query.startDate),
+                $lte: new Date(req.query.endDate),
+            };
         }
+
+        const transactions = await Transaction.find(query)
+            .populate('category_id tags account_id');
+
         res.json(transactions);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching transactions from user', error: err.message });
+        res.status(500).json({ message: 'Error fetching transactions', error: err.message });
     }
-}
+};
 
 
 exports.createTransaction = async (req, res) => {
@@ -51,7 +55,6 @@ exports.createTransaction = async (req, res) => {
             end_date
         } = req.body;
 
-
         const newTransaction = await Transaction.create({
             account_id,
             type,
@@ -64,7 +67,6 @@ exports.createTransaction = async (req, res) => {
             frequency,
             next_date,
             end_date
-
         });
 
         // Update account totals
@@ -81,14 +83,17 @@ exports.createTransaction = async (req, res) => {
         account.remainder = account.income_total - account.expense_total;
         await account.save();
 
-        // populate category and tags for the response
-        const populatedTransaction = await newTransaction.populate('account_id category_id').populate('tags');
+        // ✅ Safely populate by re-querying
+        const populatedTransaction = await Transaction.findById(newTransaction._id)
+            .populate('account_id category_id tags');
 
         res.status(201).json(populatedTransaction);
     } catch (err) {
+        console.error('Error creating transaction:', err);
         res.status(500).json({ message: 'Error creating transaction', error: err.message });
     }
 };
+
 
 exports.deleteTransaction = async (req, res) => {
     try {
@@ -145,7 +150,7 @@ exports.updateTransaction = async (req, res) => {
             account.expense_total -= transaction.amount;
         }
         account.remainder = account.income_total - account.expense_total;
-        await account.save();   
+        await account.save();
 
         // Update the transaction
         transaction.account_id = account_id;
@@ -154,7 +159,7 @@ exports.updateTransaction = async (req, res) => {
         transaction.date = date;
         transaction.category_id = category_id;
         transaction.name = name;
-        transaction.tags = tags;        
+        transaction.tags = tags;
         transaction.recurring = recurring;
         transaction.frequency = frequency;
         transaction.next_date = next_date;
@@ -167,7 +172,7 @@ exports.updateTransaction = async (req, res) => {
             account.expense_total += amount;
         }
         account.remainder = account.income_total - account.expense_total;
-        await account.save();   
+        await account.save();
         // populate category and tags for the response
         const populatedTransaction = await transaction.populate('category_id tags');
         res.json(populatedTransaction);

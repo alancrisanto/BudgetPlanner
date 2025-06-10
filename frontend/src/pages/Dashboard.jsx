@@ -159,6 +159,7 @@ const Dashboard = () => {
 										</div>
 										<div className="text-xs text-gray-500">
 											{new Date(transaction.date).toLocaleDateString('en-US', {
+												timeZone: 'UTC',
 												year: 'numeric',
 												month: 'long',
 												day: 'numeric',

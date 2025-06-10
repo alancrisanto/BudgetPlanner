@@ -1,16 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
-	const { register, handleSubmit, formState: { errors } } = useForm();
+	const storedSuccess = JSON.parse(localStorage.getItem("registrationSuccess"));
+
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+		setValue,
+	} = useForm({
+		defaultValues: {
+			email: storedSuccess?.email || "",
+			password: storedSuccess?.password || ""
+		}
+	});
+
 	const { signin, isAuthenticated, errors: signinErrors } = useAuth();
+	const [successMessage, setSuccessMessage] = useState("");
+
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (isAuthenticated) {
 			navigate("/dashboard");
+		}
+
+		if (storedSuccess) {
+			setSuccessMessage("Account created successfully. You can now log in.");
+			localStorage.removeItem("registrationSuccess");
 		}
 	}, [isAuthenticated]);
 
@@ -34,6 +54,12 @@ function Login() {
 								{signinErrors}
 							</span>
 						)}
+						{successMessage && (
+							<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-md text-sm my-4 shadow-sm">
+								{successMessage}
+							</div>
+						)}
+
 					</div>
 					<div>
 						<label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="email">
