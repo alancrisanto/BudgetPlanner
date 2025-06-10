@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import UserSettings from '../components/settings/UserSettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
-import { Helmet } from 'react-helmet-async';
 
 const tabs = [
     { id: 'account', label: 'Account' },
@@ -23,7 +22,6 @@ export default function SettingsPage() {
     return (
 
         <>
-            <Helmet>
                 <title>Settings | Budget Planner</title>
                 <meta name="description" content="Manage your BudgetPlanner profile settings, update preferences, and configure your financial tools." />
                 <meta name="keywords" content="settings, user settings, profile, preferences, account configuration, budgetplanner" />
@@ -41,7 +39,6 @@ export default function SettingsPage() {
                 <meta name="twitter:image" content="" />
 
                 <link rel="canonical" href="" />
-            </Helmet>
 
             <div className="p-4 sm:p-8 max-w-4xl mx-auto">
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">Settings</h1>

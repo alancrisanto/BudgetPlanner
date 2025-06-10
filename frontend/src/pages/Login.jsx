@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
@@ -30,7 +29,6 @@ function Login() {
 
   return (
     <>
-      <Helmet>
         <title>BudgetPlanner | Login</title>
         <meta name="description" content="Securely log in to your BudgetPlanner account and take charge of your finances." />
         <meta name="keywords" content="login, secure access, budgetplanner account" />
@@ -45,7 +43,6 @@ function Login() {
         <meta name="twitter:title" content="BudgetPlanner | Login" />
         <meta name="twitter:description" content="Log in to your BudgetPlanner account to get started." />
         <meta name="twitter:image" content="" />
-      </Helmet>
 
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">

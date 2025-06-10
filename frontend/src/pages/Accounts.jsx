@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../components/Modal';
 import { Ellipsis } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -119,7 +118,6 @@ function Accounts() {
     return (
 
         <>
-        <Helmet>
             <title>Accounts | Budget Planner</title>
             <meta name="description" content="Manage your bank accounts and financial sources connected to BudgetPlanner." />
             <meta name="keywords" content="bank accounts, finance sources, linked accounts, budget setup" />
@@ -134,7 +132,7 @@ function Accounts() {
             <meta name="twitter:title" content="BudgetPlanner | Accounts" />
             <meta name="twitter:description" content="Track and manage all your financial accounts here." />
             <meta name="twitter:image" content="" />
-        </Helmet>
+            
         <div className="flex flex-col min-h-screen p-6">
             <h1 className="text-2xl font-semibold mb-4">Accounts</h1>
 

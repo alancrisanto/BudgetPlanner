@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
@@ -36,7 +35,6 @@ function Register() {
 
 	return (
 		<>
-			<Helmet>
 				<title>BudgetPlanner | Register</title>
 				<meta name="description" content="Create a free BudgetPlanner account and start managing your finances today." />
 				<meta name="keywords" content="register, create account, sign up, budget app signup, finance tracking registration" />
@@ -51,7 +49,6 @@ function Register() {
 				<meta name="twitter:description" content="Sign up now and start managing your personal finances with ease." />
 				<meta name="twitter:image" content="" />
 				<link rel="canonical" href="" />
-			</Helmet>
 
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
 				<div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
-import { Helmet } from 'react-helmet-async';
 import { useMemo } from 'react';
 
 
@@ -305,7 +304,6 @@ function Transactions() {
 
     return (
         <>
-                <Helmet>
                     <title>Transactions | Budget Planner</title>
                     <meta name="description" content="View and manage all your transactions in one convenient place — categorized and searchable." />
                     <meta name="keywords" content="transactions, budget records, expenses, income entries, transaction log" />
@@ -320,7 +318,6 @@ function Transactions() {
                     <meta name="twitter:title" content="BudgetPlanner | Transactions" />
                     <meta name="twitter:description" content="Search, filter, and analyze your past transactions." />
                     <meta name="twitter:image" content="" />
-                </Helmet>
                 <div className="p-6">
                 <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -403,6 +400,7 @@ function Transactions() {
                                 const matchedCategory = categories.find(
                                 category => String(category._id) === String(transaction.category_id._id)
                                 );
+                                console.log("this is the matched category", matchedCategory)
                                 // Determine the arrow direction and color based on transaction type
                                 const isIncome = transaction.type === 'income';
                                 const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
@@ -534,14 +532,9 @@ function Transactions() {
                             onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                             required>
                             <option value="">Select Category</option>
-                            <option value="tithing">Tithing</option>
-                            <option value="food">Food</option>
-                            <option value="transportation">Transportation</option>
-                            <option value="utilities">Utilities</option>
-                            <option value="entertainment">Entertainment</option>
-                            <option value="health">Health</option>
-                            <option value="education">Education</option>
-                            <option value="others">Others</option>
+                                {categories.map(category => (
+                                <option key={category._id} value={category._id}>{category.name}</option>
+                                ))}
                         </select>
                         {formErrors.category_id && (
                             <span className="text-red-500 text-xs">{formErrors.category_id}</span>

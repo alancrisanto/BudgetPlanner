@@ -1,11 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
 function Home() {
 	return (
 		<>
-			<Helmet>
 				<title>Home | Budget Planner</title>
 				<meta name="description" content="Plan your budget effectively with BudgetPlanner. Manage expenses, income, and more!" />
 				<meta name="keywords" content="budget planner, money manager, expense tracker, personal finance" />
@@ -23,7 +21,7 @@ function Home() {
 				<meta name="twitter:description" content="Plan your budget effectively with BudgetPlanner." />
 				<meta name="twitter:card" content="" />
 				<meta name="twitter:image" content="" />
-			</Helmet>
+
 			<section className="bg-white">
 			<div className="mx-auto w-full max-w-screen-xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
 				<div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
