@@ -66,25 +66,19 @@ exports.createTransaction = async (req, res) => {
             next_date,
             end_date)
 
-         const categoryName = category_id?.trim().toLowerCase();
-            let category = await Category.findOne({ name: categoryName });
-            if (!category) {
-            category = await Category.create({ name: categoryName });
-            }
-            let category_ID = category._id
-            console.log("Category ID is", category_ID)
+
 
         const tagIds = [];
 
         for (const tagName of tags) {
-        const trimmedName = tagName.trim().toLowerCase(); // normalize tag
-        let tag = await Tag.findOne({ name: trimmedName });
+            const trimmedName = tagName.trim().toLowerCase(); // normalize tag
+            let tag = await Tag.findOne({ name: trimmedName });
 
-        if (!tag) {
-            tag = await Tag.create({ name: trimmedName });
-        }
+            if (!tag) {
+                tag = await Tag.create({ name: trimmedName });
+            }
 
-        tagIds.push(tag._id);
+            tagIds.push(tag._id);
         }
 
         const newTransaction = await Transaction.create({
@@ -92,9 +86,9 @@ exports.createTransaction = async (req, res) => {
             type,
             amount,
             date,
-            category_id: category_ID,
-            name, 
-            tags : tagIds,
+            category_id,
+            name,
+            tags: tagIds,
             recurring,
             frequency,
             next_date,
@@ -102,7 +96,7 @@ exports.createTransaction = async (req, res) => {
 
         });
 
-        console.log("new transaction",  type,
+        console.log("new transaction", type,
             amount,
             date,
             category_id,
@@ -192,7 +186,7 @@ exports.updateTransaction = async (req, res) => {
             account.expense_total -= transaction.amount;
         }
         account.remainder = account.income_total - account.expense_total;
-        await account.save();   
+        await account.save();
 
         // Update the transaction
         transaction.account_id = account_id;
@@ -201,7 +195,17 @@ exports.updateTransaction = async (req, res) => {
         transaction.date = date;
         transaction.category_id = category_id;
         transaction.name = name;
-        transaction.tags = tags;        
+        const tagIds = [];
+        for (const tagName of tags) {
+            const trimmed = tagName.trim().toLowerCase();
+            let tag = await Tag.findOne({ name: trimmed });
+            if (!tag) {
+                tag = await Tag.create({ name: trimmed });
+            }
+            tagIds.push(tag._id);
+        }
+        transaction.tags = tagIds;
+
         transaction.recurring = recurring;
         transaction.frequency = frequency;
         transaction.next_date = next_date;
@@ -214,7 +218,7 @@ exports.updateTransaction = async (req, res) => {
             account.expense_total += amount;
         }
         account.remainder = account.income_total - account.expense_total;
-        await account.save();   
+        await account.save();
         // populate category and tags for the response
         const populatedTransaction = await transaction.populate('category_id tags');
         res.json(populatedTransaction);
