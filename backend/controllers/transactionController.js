@@ -173,6 +173,9 @@ exports.updateTransaction = async (req, res) => {
             end_date
         } = req.body;
 
+        console.log("this is the updated tags", tags)
+        console.log("this is the updated category id", category_id)
+
         const transaction = await Transaction.findById(id);
         if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
 
@@ -197,13 +200,13 @@ exports.updateTransaction = async (req, res) => {
         transaction.name = name;
         const tagIds = [];
         for (const tagName of tags) {
-            const trimmed = tagName.trim().toLowerCase();
+            const trimmed = (typeof tagName === 'object' ? tagName.name : tagName).trim().toLowerCase();
             let tag = await Tag.findOne({ name: trimmed });
             if (!tag) {
                 tag = await Tag.create({ name: trimmed });
             }
             tagIds.push(tag._id);
-        }
+            }
         transaction.tags = tagIds;
 
         transaction.recurring = recurring;
