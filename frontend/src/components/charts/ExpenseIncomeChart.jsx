@@ -8,8 +8,12 @@ function cumulativeDailyData(transactions) {
     const dayMap = new Map();
 
     for (let tsx of sorted) {
-        const utcDate = new Date(tsx.date + 'Z');
-        const day = utcDate.toLocaleDateString('en-US');
+        const utcDate = new Date(tsx.date);
+        if (isNaN(utcDate)) {
+            console.error("Invalid date:", tsx.date);
+            continue;
+        }
+        const day = utcDate.toISOString().split('T')[0];
 
         if (!dayMap.has(day)) {
             dayMap.set(day, { income: cumulativeIncome, expense: cumulativeExpense });
@@ -28,7 +32,7 @@ function cumulativeDailyData(transactions) {
 
     const data = [["Date", "Cumulative Expenses", "Cumulative Income"]];
     for (const [day, values] of sortedDays) {
-        data.push([day, values.expense, values.income]);
+        data.push([new Date(day), values.expense, values.income]);
     }
 
     return data;
@@ -39,7 +43,7 @@ const ExpenseIncomeChart = ({ transactions }) => {
 
     const options = {
         hAxis: { title: "Date" },
-        vAxis: { title: "Cumulative Amount ($)" },
+        vAxis: { title: "Cumulative Amounts" },
         legend: { position: "bottom" },
     };
 
