@@ -138,8 +138,25 @@ function Accounts() {
     if (error) {
         return <div className="p-4 text-red-500">Error: {error.message}</div>;
     }
-
+    
     return (
+
+        <>
+            <title>Accounts | Budget Planner</title>
+            <meta name="description" content="Manage your bank accounts and financial sources connected to BudgetPlanner." />
+            <meta name="keywords" content="bank accounts, finance sources, linked accounts, budget setup" />
+            <meta name="author" content="Veihi Joy Tupai,  Cameron Pedro, _Rama Krishna Bhagi Perez, Bamutesiza Ronald" />
+
+            <meta property="og:title" content="BudgetPlanner | Accounts" />
+            <meta property="og:description" content="Easily manage your accounts in BudgetPlanner." />
+            <meta property="og:url" content="" />
+            <meta property="og:image" content="" />
+
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="BudgetPlanner | Accounts" />
+            <meta name="twitter:description" content="Track and manage all your financial accounts here." />
+            <meta name="twitter:image" content="" />
+            
         <div className="flex flex-col min-h-screen p-6">
             <h1 className="text-2xl font-semibold mb-4">Accounts</h1>
 
@@ -218,6 +235,8 @@ function Accounts() {
             </Modal>
 
         </div>
+        </>
+        
     );
 }
 
