@@ -159,7 +159,6 @@ function Transactions() {
                     },
                 }),
             ]);
-            console.log("Transactions fetched:", transactionsResponse.data);
             setAccounts(accountsResponse.data);
             setTransactions(transactionsResponse.data);
             setCategories(categoriesResponse.data);
@@ -195,9 +194,6 @@ function Transactions() {
         }
         setFormErrors({}); // Clear errors if no validation issues
         try {
-            // Prepare form data for submission
-            console.log("🚨 tagInput is:", tagInput, "and its type is", typeof tagInput);
-
             const cleanedTag = typeof tagInput === 'string' ? tagInput.trim() : '';;
             let updatedTags = formData.tags;
 
@@ -215,19 +211,15 @@ function Transactions() {
                 tags: updatedTags.map(tag => typeof tag === 'object' ? tag.name : tag),
             };
 
-            console.log('Submitting transaction:', formDataToSubmit);
             // If editing an existing transaction, update it; otherwise, create a new one
             if (editTransaction) {
                 // Update transaction
-                console.log("📤 Sending to backend:", JSON.stringify(formDataToSubmit, null, 2));
-
                 const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`, 
                     formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log("Updated transactions", response.data);
                 let updatedTransaction = response.data;
 
                 // Ensure category_id and account_id are objects like in other transactions
@@ -244,9 +236,6 @@ function Transactions() {
                 setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? updatedTransaction : transaction));
             } else {
                 // Create new transaction
-                console.log('📤 Final data being sent:', JSON.stringify(formDataToSubmit, null, 2));
-                console.log('✅ Tags at send-time:', formDataToSubmit.tags);
-
                 const response = await axios.post(`${VITE_API_URL}/api/transactions`, 
                     formDataToSubmit, {
                     headers: {
@@ -254,8 +243,6 @@ function Transactions() {
                         'Content-Type': 'application/json'
                     },
                 });
-
-                console.log("response data", response.data)
                 setTransactions([...transactions, response.data]);
             }
             // Reset form data
@@ -272,7 +259,6 @@ function Transactions() {
             closeModal();
         } catch (err) {
             console.error('Error submitting transaction:', err);
-            console.log(err)
             setError(err);
         }
     };
@@ -343,7 +329,7 @@ function Transactions() {
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 {/* Filter by account */}
                 <div className="flex items-center gap-2">
-                    <label htmlFor="account" className="text-sm font-medium text-gray-700">Account</label>
+                    <label htmlFor="account" className="text-sm font-medium text-gray-700">Account:</label>
                     <select id="account" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
                     value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
                         <option value="all">All</option>
@@ -377,17 +363,17 @@ function Transactions() {
                 </div>
 
                 {/**filter by tag */}
-                 <div className="flex items-center gap-2 mb-4">
-                    <label htmlFor="tagFilter" className="border border-gray-300 rounded-md px-3 py-2 text-sm">
-                        Filter by Tag
+                <div className="flex items-center gap-2">
+                    <label htmlFor="tagFilter" className="text-sm font-medium text-gray-700">
+                        Tag:
                     </label>
                     <select
                         id="tagFilter"
                         value={selectedTagFilter}
                         onChange={(e) => setSelectedTagFilter(e.target.value)}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm"
                     >
-                        <option value="">-- All Tags --</option>
+                        <option value="">All</option>
                         {allTags.map((tag, idx) => (
                             <option key={idx} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
                         ))}
@@ -420,8 +406,6 @@ function Transactions() {
                                 const matchedCategory = categories.find(
                                 category => String(category._id) === String(transaction.category_id._id || transaction.category_id)
                                 );
-
-                                console.log("this is the matched category", matchedCategory)
                                 // Determine the arrow direction and color based on transaction type
                                 const isIncome = transaction.type === 'income';
                                 const arrowColor = isIncome ? 'text-green-500' : 'text-red-500';
@@ -451,7 +435,6 @@ function Transactions() {
                                         {/* Tags */}
                                         {transaction.tags && transaction.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mt-2">
-                                            {console.log("transactions to be displayed", transaction.tags)}
                                             {transaction.tags.map((tag, index) => (
                                             <span
                                                 key={index}
