@@ -96,17 +96,6 @@ exports.createTransaction = async (req, res) => {
 
         });
 
-        console.log("new transaction", type,
-            amount,
-            date,
-            category_id,
-            name,
-            tagIds,
-            recurring,
-            frequency,
-            next_date,
-            end_date)
-
         // Update account totals
         const account = await Account.findById(account_id);
         if (!account) return res.status(404).json({ message: 'Account not found' });
@@ -122,7 +111,6 @@ exports.createTransaction = async (req, res) => {
 
         // populate category and tags for the response
         const populatedTransaction = await newTransaction.populate('category_id tags');
-        console.log("populated transaction", populatedTransaction)
 
         res.status(201).json(populatedTransaction);
     } catch (err) {
@@ -172,9 +160,6 @@ exports.updateTransaction = async (req, res) => {
             next_date,
             end_date
         } = req.body;
-
-        console.log("this is the updated tags", tags)
-        console.log("this is the updated category id", category_id)
 
         const transaction = await Transaction.findById(id);
         if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
