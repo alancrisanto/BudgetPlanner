@@ -1,8 +1,10 @@
 import React from "react";
+import { usePreferences } from '../../context/PreferencesContext.jsx';
 
 function getTopCategoriesPerMonth(transactions, monthCount = 5) {
     const now = new Date();
     const results = [];
+    
 
     for (let i = 0; i < monthCount; i++) {
         const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -40,6 +42,7 @@ function getTopCategoriesPerMonth(transactions, monthCount = 5) {
 }
 
 const CategoriesMonthsChart = ({ transactions }) => {
+    const { currencySymbol } = usePreferences();
     const monthlyTopCategories = getTopCategoriesPerMonth(transactions, 5);
 
     return (
@@ -52,7 +55,7 @@ const CategoriesMonthsChart = ({ transactions }) => {
                             <div className="text-sm text-gray-500">{count} transaction{count !== 1 ? "s" : ""}</div>
                         </div>
                         <div className="text-right">
-                            <div className="text-base font-semibold text-gray-800">${total.toFixed(2)}</div>
+                            <div className="text-base font-semibold text-gray-800">{currencySymbol}{total.toFixed(2)}</div>
                             <div className="text-xs text-gray-500">{month}</div>
                         </div>
                     </li>
