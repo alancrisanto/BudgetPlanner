@@ -1,26 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import UserSettings from '../components/settings/UserSettings';
-import NotificationSettings from '../components/settings/NotificationSettings';
-
-const tabs = [
-    { id: 'account', label: 'Account' },
-    { id: 'notifications', label: 'Notifications' }
-];
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState('account');
-
-    const renderContent = () => {
-        switch (activeTab) {
-            case 'notifications':
-                return <NotificationSettings />;
-            default:
-                return <UserSettings />;
-        }
-    };
-
     return (
-
         <>
                 <title>Settings | Budget Planner</title>
                 <meta name="description" content="Manage your BudgetPlanner profile settings, update preferences, and configure your financial tools." />
@@ -76,6 +58,10 @@ export default function SettingsPage() {
 
             {/* Tab content */}
             <div>{renderContent()}</div>
+
+        <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6">User Settings</h1>
+            <UserSettings />
         </div>
         </>
         

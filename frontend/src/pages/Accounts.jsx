@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../components/Modal';
-import { Ellipsis } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { usePreferences } from '../context/PreferencesContext';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,6 +20,8 @@ function Accounts() {
     const [formData, setFormData] = useState({
         name: ''
     });
+    const { currencySymbol } = usePreferences();
+
     const [showModal, setShowModal] = useState(false);
     const openModal = (account = null) => {
         if (account) {
@@ -55,7 +58,6 @@ function Accounts() {
                 const res = await axios.get(`${VITE_API_URL}/api/accounts`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                console.log('Fetched accounts:', res.data);
                 setAccounts(res.data);
             } catch (err) {
                 console.error('Failed to fetch accounts:', err);
@@ -66,6 +68,7 @@ function Accounts() {
         fetchAccounts();
     }, [isAuthenticated]);
 
+    // Handle add a new account
     const handleAddAccount = async (e) => {
         e.preventDefault();
 
@@ -93,7 +96,6 @@ function Accounts() {
             const res = await axios.post(`${VITE_API_URL}/api/accounts`, { name }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log('Account created:', res.data);
             setAccounts(prevAccounts => [...prevAccounts, res.data]);
 
             // Reset form and close modal
@@ -105,6 +107,28 @@ function Accounts() {
             setError(err.response ? err.response.data : 'Failed to create account');
         } finally {
             setLoading(false);
+        }
+    }
+    // Handle delete account
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const closeDeleteModal = () => setShowDeleteModal(false);
+    const [deleteAccountId, setDeleteAccountId] = useState(null);
+    const handleDelete = async () => {
+        if (!deleteAccountId) return;
+
+        try {
+            await axios.delete(`${VITE_API_URL}/api/accounts/${deleteAccountId}`, {
+                headers: {
+                    Authorization: `Bearer ${user.token}`
+                }
+            });
+            setAccounts(prevAccounts => prevAccounts.filter(account => account._id !== deleteAccountId));
+            setDeleteAccountId(null);
+        }
+        catch (err) {
+            setError(err.response ? err.response.data.message : 'Error deleting account');
+        } finally {
+            closeDeleteModal();
         }
     }
 
@@ -148,28 +172,35 @@ function Accounts() {
                 </div>
             </div>
 
-                <div className="w-flow max-w-6xl">
-                    {accounts.length === 0 ? (
-                        <p className="text-gray-500 text-center">No accounts yet.</p>
-                    ) : (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
-                            {accounts.map(account => (
+            <div className="w-flow max-w-6xl">
+                {accounts.length === 0 ? (
+                    <p className="text-gray-500 text-center">No accounts yet.</p>
+                ) : (
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
+                        {accounts.map(account => (
+                            <Link to={`/accounts/${account._id}`} className="no-underline" key={account._id}>
                                 <div key={account._id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-5">
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-lg font-semibold text-gray-800">{account.name}</h3>
-                                        <Link to={`/accounts/${account._id}`} className='text-gray-500 hover:text-gray-700'><Ellipsis size={18} /></Link>
+                                        {/* Delete button */}
+                                        <button onClick={() => { setDeleteAccountId(account._id); setShowDeleteModal(true); }} className="text-gray-500 hover:text-red-700">
+                                            <Trash2 size={16} /> </button>
                                     </div>
+                                    {/* Income, expense and remainder info */}
                                     <div className="text-sm text-gray-600 space-y-1">
-                                        <p>Income: <span className="text-green-600 font-medium">${(account.income_total).toFixed(2) || 0}</span></p>
-                                        <p>Expenses: <span className="text-red-600 font-medium">${(account.expense_total).toFixed(2) || 0}</span></p>
-                                        <p className="font-semibold text-gray-700">Remainder: ${Number((account.income_total || 0) - (account.expense_total || 0)).toFixed(2)}</p>
+                                        <p>Income: <span className="text-green-600 font-medium">{currencySymbol}{(account.income_total).toFixed(2) || 0}</span></p>
+                                        <p>Expenses: <span className="text-red-600 font-medium">{currencySymbol}{(account.expense_total).toFixed(2) || 0}</span></p>
+                                        <p className="font-semibold text-gray-700">Remainder: {currencySymbol}{((account.income_total || 0) - (account.expense_total || 0)).toFixed(2)}</p>
+
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
 
+            {/* Modal to add a new account */}
             <Modal isOpen={showModal} onClose={closeModal} title="Add Account" onSubmit={handleAddAccount}>
                 <form onSubmit={handleAddAccount} className="space-y-4">
                     <div>
@@ -189,6 +220,18 @@ function Accounts() {
                         Create Account
                     </button>
                 </form>
+            </Modal>
+
+            {/* Modal for confirming account deletion */}
+            <Modal isOpen={showDeleteModal} title="Delete Account" onClose={closeDeleteModal}>
+                <div className="space-y-4">
+                    <p>Are you sure you want to delete this account? This action cannot be undone.</p>
+                    <div className="flex justify-end gap-4">
+                        <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </Modal>
 
         </div>

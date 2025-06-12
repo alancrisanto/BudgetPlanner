@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { useMemo } from 'react';
-
+import { usePreferences } from '../context/PreferencesContext';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL
 
@@ -13,9 +13,10 @@ function Transactions() {
     // and retrieve user information from localStorage
     const user = JSON.parse(localStorage.getItem('user'));
     const token = user ? user.token : null;
-    
+
     const [accounts, setAccounts] = useState([]);
     const [selectedAccount, setSelectedAccount] = useState('');
+    const { currencySymbol } = usePreferences();
 
     // State variables for transactions, loading, error, categories, form data, and modals
     const [transactions, setTransactions] = useState([]);
@@ -91,8 +92,6 @@ function Transactions() {
         return Array.from(tagSet);
     }, [transactions]);
 
-
-    
     useEffect(() => {
         let filteredResult = [...transactions];
         // Filter transactions based on selected account
@@ -110,7 +109,7 @@ function Transactions() {
         }
         // Sort transactions based on selected sort criteria
         filteredResult.sort((a, b) => {
-        if (sortBy === 'date') {
+            if (sortBy === 'date') {
                 return new Date(a.date) - new Date(b.date);
             } else if (sortBy === 'amount') {
                 return parseFloat(a.amount) - parseFloat(b.amount);
@@ -125,7 +124,7 @@ function Transactions() {
     // Handle search functionality
     const handleSearch = (searchTerm) => {
         // Filter transactions based on search term
-        const filtered = transactions.filter(transaction => 
+        const filtered = transactions.filter(transaction =>
             transaction.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             transaction.category_id.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -159,8 +158,12 @@ function Transactions() {
                     },
                 }),
             ]);
+          
+            // Sort transactions by date
+            const sortedTransactions = transactionsResponse.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
             setAccounts(accountsResponse.data);
-            setTransactions(transactionsResponse.data);
+            setTransactions(sortedTransactions);
             setCategories(categoriesResponse.data);
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -214,7 +217,7 @@ function Transactions() {
             // If editing an existing transaction, update it; otherwise, create a new one
             if (editTransaction) {
                 // Update transaction
-                const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`, 
+                const response = await axios.put(`${VITE_API_URL}/api/transactions/${editTransaction._id}`,
                     formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -236,7 +239,7 @@ function Transactions() {
                 setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? updatedTransaction : transaction));
             } else {
                 // Create new transaction
-                const response = await axios.post(`${VITE_API_URL}/api/transactions`, 
+                const response = await axios.post(`${VITE_API_URL}/api/transactions`,
                     formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -282,8 +285,8 @@ function Transactions() {
             console.error('Error deleting transaction:', err);
             setError(err);
         } finally {
-        setDeleteTransaction(null);
-        setShowDeleteModal(false);
+            setDeleteTransaction(null);
+            setShowDeleteModal(false);
         }
     };
 
@@ -307,9 +310,8 @@ function Transactions() {
         const updatedTags = formData.tags.filter((_, i) => i !== index);
         setFormData({ ...formData, tags: updatedTags });
     };
-
     return (
-        <>
+      <>
                     <title>Transactions | Budget Planner</title>
                     <meta name="description" content="View and manage all your transactions in one convenient place — categorized and searchable." />
                     <meta name="keywords" content="transactions, budget records, expenses, income entries, transaction log" />
@@ -324,14 +326,14 @@ function Transactions() {
                     <meta name="twitter:title" content="BudgetPlanner | Transactions" />
                     <meta name="twitter:description" content="Search, filter, and analyze your past transactions." />
                     <meta name="twitter:image" content="" />
-                <div className="p-6">
-                <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="p-6">
+            <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 {/* Filter by account */}
                 <div className="flex items-center gap-2">
                     <label htmlFor="account" className="text-sm font-medium text-gray-700">Account:</label>
                     <select id="account" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                    value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
+                        value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
                         <option value="all">All</option>
                         {accounts.map(account => (
                             <option key={account._id} value={account._id}>{account.name}</option>
@@ -343,7 +345,7 @@ function Transactions() {
                 <div className="flex items-center gap-2">
                     <label htmlFor="filter" className="text-sm font-medium text-gray-700">Filter:</label>
                     <select id="filter" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                    value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value)}>
+                        value={selectedFilter} onChange={(e) => setSelectedFilter(e.target.value)}>
                         <option value="">All</option>
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
@@ -385,7 +387,6 @@ function Transactions() {
                     <input type="text" id="search" placeholder="Search transactions..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                     onChange={(e) => handleSearch(e.target.value)}/>
                 </div>
-
                 {/* Add button */}
                 <button onClick={() => openModal()} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
                     Add Transaction
@@ -445,28 +446,27 @@ function Transactions() {
                                             ))}
                                         </div>
                                         )}
-
                                         {/* Amount and date */}
                                         <div className="flex items-center gap-4 pl-4">
-                                        <div className="text-right">
-                                            <div className="text-lg font-semibold">
-                                            {isIncome ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
+                                            <div className="text-right">
+                                                <div className="text-lg font-semibold">
+                                                    {isIncome ? '+' : '-'}{currencySymbol}{parseFloat(transaction.amount).toFixed(2)}
+                                                </div>
+                                                <div className="text-sm text-gray-500">{formattedDate}</div>
                                             </div>
-                                            <div className="text-sm text-gray-500">{formattedDate}</div>
-                                        </div>
-                                        {/* Edit and delete buttons */}
-                                        <div className="flex flex-col items-center space-y-2">
-                                            <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
-                                                <Pencil size={16} />
-                                            </button>
-                                            <button onClick={() => confirmDelete(transaction._id)} className="hover:text-red-700" title="Delete">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
+                                            {/* Edit and delete buttons */}
+                                            <div className="flex flex-col items-center space-y-2">
+                                                <button onClick={() => openModal(transaction)} className="hover:text-blue-700" title="Edit">
+                                                    <Pencil size={16} />
+                                                </button>
+                                                <button onClick={() => confirmDelete(transaction._id)} className="hover:text-red-700" title="Delete">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 );
-                                })}
+                            })}
                         </div>
                     )}
                 </>
@@ -536,7 +536,6 @@ function Transactions() {
                             required>
                             <option value="">Select Category</option>
                                 {categories.map(category => (
-                                    
                                 <option key={category._id} value={category._id}>{category.name}</option>        
                             
                                 ))}
@@ -568,7 +567,7 @@ function Transactions() {
                     />
                     </div>
 
-                    <button type="submit" className="mt-5 bg-blue-500 text-white px-4 py-2 rounded" disabled={loading}>
+                    <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading}>
                     Save
                     </button>
                 </form>
@@ -587,7 +586,6 @@ function Transactions() {
             </Modal>
         </div>
         </>
-        
     );
 }
 

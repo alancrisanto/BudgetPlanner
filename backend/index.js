@@ -4,7 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const app = express();
-
+const fs = require('fs');
+const https = require('https');
+const http = require('http');
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -41,4 +43,21 @@ app.get('/*', (req, res) => {
 
 // Server start
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+if (process.env.DEV == 'true') {
+  // Start the HTTP server
+  http.createServer(app).listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}/`);
+  });
+} else {
+  const httpsOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/casualhorizons.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/casualhorizons.com/fullchain.pem')
+  };
+
+  const server = https.createServer(httpsOptions, app);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on https://0.0.0.0:${PORT}/`);
+  });
+
+}

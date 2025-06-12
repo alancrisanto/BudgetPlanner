@@ -17,24 +17,28 @@ exports.getTransactionsByAccount = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const userId = req.user.id;
-        // Find all accounts for the user
         const accounts = await Account.find({ user_id: userId });
         if (!accounts || accounts.length === 0) {
             return res.status(200).json([]);
         }
-        // Find all transactions for the user's accounts
-        const transactions = await Transaction.find({ account_id: { $in: accounts.map(account => account._id) } })
-            .populate('category_id tags')
-            .populate('tags')
-            .populate('account_id');
-        if (!transactions || transactions.length === 0) {
-            return res.status(200).json([]);
+
+        const query = { account_id: { $in: accounts.map(a => a._id) } };
+
+        if (req.query.startDate && req.query.endDate) {
+            query.date = {
+                $gte: new Date(req.query.startDate),
+                $lte: new Date(req.query.endDate),
+            };
         }
+
+        const transactions = await Transaction.find(query)
+            .populate('category_id tags account_id');
+
         res.json(transactions);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching transactions from user', error: err.message });
+        res.status(500).json({ message: 'Error fetching transactions', error: err.message });
     }
-}
+};
 
 
 exports.createTransaction = async (req, res) => {
@@ -54,20 +58,6 @@ exports.createTransaction = async (req, res) => {
             end_date
         } = req.body;
 
-        console.log("incoming transaction", account_id,
-            type,
-            amount,
-            date,
-            category_id,
-            name,
-            tags,
-            recurring,
-            frequency,
-            next_date,
-            end_date)
-
-
-
         const tagIds = [];
 
         for (const tagName of tags) {
@@ -80,7 +70,7 @@ exports.createTransaction = async (req, res) => {
 
             tagIds.push(tag._id);
         }
-
+      
         const newTransaction = await Transaction.create({
             account_id,
             type,
@@ -93,31 +83,33 @@ exports.createTransaction = async (req, res) => {
             frequency,
             next_date,
             end_date
-
         });
 
         // Update account totals
         const account = await Account.findById(account_id);
         if (!account) return res.status(404).json({ message: 'Account not found' });
 
+        const numericAmount = parseFloat(amount);
         if (type === 'income') {
-            account.income_total += amount;
+            account.income_total += numericAmount;
         } else {
-            account.expense_total += amount;
+            account.expense_total += numericAmount;
         }
 
         account.remainder = account.income_total - account.expense_total;
         await account.save();
 
-        // populate category and tags for the response
-        const populatedTransaction = await newTransaction.populate('category_id tags');
+        // Safely populate by re-querying
+        const populatedTransaction = await Transaction.findById(newTransaction._id)
+            .populate('account_id category_id tags');
 
         res.status(201).json(populatedTransaction);
     } catch (err) {
-        console.error(err)
+        console.error('Error creating transaction:', err);
         res.status(500).json({ message: 'Error creating transaction', error: err.message });
     }
 };
+
 
 exports.deleteTransaction = async (req, res) => {
     try {
@@ -183,6 +175,7 @@ exports.updateTransaction = async (req, res) => {
         transaction.date = date;
         transaction.category_id = category_id;
         transaction.name = name;
+
         const tagIds = [];
         for (const tagName of tags) {
             const trimmed = (typeof tagName === 'object' ? tagName.name : tagName).trim().toLowerCase();
@@ -193,7 +186,6 @@ exports.updateTransaction = async (req, res) => {
             tagIds.push(tag._id);
             }
         transaction.tags = tagIds;
-
         transaction.recurring = recurring;
         transaction.frequency = frequency;
         transaction.next_date = next_date;
@@ -213,5 +205,29 @@ exports.updateTransaction = async (req, res) => {
     }
     catch (err) {
         res.status(500).json({ message: 'Error updating transaction', error: err.message });
+    }
+}
+
+exports.getLastTransactions = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Find all accounts for the user
+        const accounts = await Account.find({ user_id: userId });
+        if (!accounts || accounts.length === 0) {
+            return res.status(200).json([]);
+        }
+        // Find the last 10 transactions for the user's accounts
+        const transactions = await Transaction.find({ account_id: { $in: accounts.map(account => account._id) } })
+            .sort({ date: -1 })
+            .limit(5)
+            .populate('category_id')
+            .populate('tags')
+            .populate('account_id');
+        if (!transactions || transactions.length === 0) {
+            return res.status(200).json([]);
+        }
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching last transactions from user', error: err.message });
     }
 }

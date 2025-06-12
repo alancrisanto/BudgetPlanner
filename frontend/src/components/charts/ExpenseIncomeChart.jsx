@@ -1,27 +1,16 @@
 import { Chart } from "react-google-charts";
 
 function cumulativeDailyData(transactions) {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    // Filter transactions for current month and year
-    const filtered = transactions
-        .filter((tsx) => {
-            const d = new Date(tsx.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        })
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sorted = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
 
     let cumulativeIncome = 0;
     let cumulativeExpense = 0;
-
     const dayMap = new Map();
 
-    // Iterate through filtered transactions and calculate cumulative totals
-    // for each day of the month
-    for (let tsx of filtered) {
-        const day = new Date(tsx.date).getDate();
+    for (let tsx of sorted) {
+        const utcDate = new Date(tsx.date + 'Z');
+        const day = utcDate.toLocaleDateString('en-US');
+
         if (!dayMap.has(day)) {
             dayMap.set(day, { income: cumulativeIncome, expense: cumulativeExpense });
         }
@@ -32,42 +21,38 @@ function cumulativeDailyData(transactions) {
             cumulativeExpense += tsx.amount;
         }
 
-        // Update the current day's totals
         dayMap.set(day, { income: cumulativeIncome, expense: cumulativeExpense });
     }
 
-    const sortedDays = [...dayMap.entries()].sort(([a], [b]) => a - b);
+    const sortedDays = [...dayMap.entries()].sort(([a], [b]) => new Date(a + 'Z') - new Date(b + 'Z'));
 
-    // Format for Google Charts
-    const data = [["Day", "Cumulative Expenses", "Cumulative Income"]];
+    const data = [["Date", "Cumulative Expenses", "Cumulative Income"]];
     for (const [day, values] of sortedDays) {
-        data.push([`${day}`, values.expense, values.income]);
+        data.push([day, values.expense, values.income]);
     }
 
     return data;
 }
 
-
 const ExpenseIncomeChart = ({ transactions }) => {
     const data = cumulativeDailyData(transactions);
 
     const options = {
-        hAxis: { title: "Day" },
+        hAxis: { title: "Date" },
         vAxis: { title: "Cumulative Amount ($)" },
         legend: { position: "bottom" },
     };
 
-    // Ensure the data has at least one row for the chart to render
     if (data.length <= 1) {
         return (
-        <div className="w-full h-32 flex items-center justify-center">
-            <p className="text-gray-500 text-center">No data available.</p>
-        </div>
+            <div className="w-full h-32 flex items-center justify-center">
+                <p className="text-gray-500 text-center">No data available.</p>
+            </div>
         );
     }
 
     return (
-        <div className={"w-full h-96 flex items-center justify-center"}>
+        <div className="w-full h-96 flex items-center justify-center">
             <Chart
                 chartType="LineChart"
                 width="100%"
