@@ -20,10 +20,7 @@ exports.getAccountById = async (req, res) => {
 }
 
 exports.createAccount = async (req, res) => {
-  try {
-
-        console.log('req.user:', req.user);
-        console.log('req.body:', req.body);
+    try {
         const { name } = req.body;
         const newAccount = await Account.create({
             user_id: req.user.id,
