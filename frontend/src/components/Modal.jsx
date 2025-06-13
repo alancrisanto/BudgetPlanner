@@ -34,7 +34,7 @@ const Modal = ({ isOpen, onClose, children, title = "Modal" }) => {
                     &times;
                 </button>
 
-                <h2 className="text-xl font-semibold mb-4">{title}</h2>
+                <h2 className="text-xl font-semibold mb-4 mt-6">{title}</h2>
                 {children}
             </div>
         </div>
