@@ -208,10 +208,6 @@ const Dashboard = () => {
 			</div>
 			<div className="flex flex-col lg:flex-row gap-6 mt-6">
 				<Dashcoins />
-
-				<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
-					<h2>News..</h2>
-				</div>
 			</div>
 			
 		</div>
