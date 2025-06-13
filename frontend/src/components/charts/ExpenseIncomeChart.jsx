@@ -45,6 +45,7 @@ const ExpenseIncomeChart = ({ transactions }) => {
         hAxis: { title: "Date" },
         vAxis: { title: "Cumulative Amounts" },
         legend: { position: "bottom" },
+        colors: ["#e57373", "#64b5f6"], // Red for expenses, Blue for income
     };
 
     if (data.length <= 1) {
