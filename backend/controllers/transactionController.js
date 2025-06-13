@@ -42,7 +42,6 @@ exports.getTransactions = async (req, res) => {
 
 
 exports.createTransaction = async (req, res) => {
-    console.log('Full request body:', req.body);
     try {
         let {
             account_id,
