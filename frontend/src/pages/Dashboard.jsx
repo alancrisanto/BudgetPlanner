@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import ExpPerAcctChart from '../components/charts/ExpPerAcctChart';
 import CategoriesAcctsChart from '../components/charts/CategoriesAcctsChart';
 import CategoriesMonthsChart from '../components/charts/CategoriesMonthsChart';
+import { usePreferences } from '../context/PreferencesContext';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -12,6 +13,7 @@ const Dashboard = () => {
 
 	const { isAuthenticated } = useAuth();
 	const [loading, setLoading] = useState(true);
+	const { currencySymbol } = usePreferences();
 	const [error, setError] = useState(null);
 	const [accounts, setAccounts] = useState([]);
 	const [transactions, setTransactions] = useState([]);
@@ -68,6 +70,7 @@ const Dashboard = () => {
 	}, [isAuthenticated, user?.token]);
 
 	return (
+		<div className="grid grid-cols-1 gap-6 p-6 max-w-7xl mx-auto">
 		<>
         		<title>DashBoard | Budget Planner</title>
 				<meta name="description" content="View your financial overview — track income, expenses, savings, and budget performance in one place." />
@@ -102,47 +105,46 @@ const Dashboard = () => {
 					<p className="text-red-500">{error}</p>
 				</div>
 			) : (
-				<div className="flex flex-col lg:flex-row gap-6 mt-6">
-					{/* Balances Card */}
-					{accounts.length > 0 ? (
-						<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
-							<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
-							{accounts.map((account) => (
-								<div key={account._id} className="flex justify-between items-start py-4">
-									{/* Account name on the left */}
-									<div className="text-lg font-medium text-gray-800 w-1/2">
-										{account.name}
-									</div>
+					<div className="flex flex-col lg:flex-row gap-6 mt-6">
+						{/* Balances Card */}
+						{accounts.length > 0 ? (
+							<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+								<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
+								{accounts.map((account) => (
+									<div key={account._id} className="flex justify-between items-start py-4">
+										{/* Account name on the left */}
+										<div className="text-lg font-medium text-gray-800 w-1/2">
+											{account.name}
+										</div>
 
-									{/* Numbers on the right */}
-									<div className="text-right w-1/2">
-										<p className="text-base font-medium">{account.income_total.toFixed(2)}</p>
-										<p className="text-base font-medium">{account.expense_total.toFixed(2)}</p>
-										<hr className="my-2 w-24 ml-auto border-gray-300" />
-										<p className="text-base font-medium">${account.remainder.toFixed(2)}</p>
+										{/* Numbers on the right */}
+										<div className="text-right w-1/2">
+											<p className="text-base font-medium text-green-500">{currencySymbol}{account.income_total.toFixed(2)}</p>
+											<p className="text-base font-medium text-red-500">{currencySymbol}{account.expense_total.toFixed(2)}</p>
+											<hr className="my-2 w-24 ml-auto border-gray-300" />
+											<p className="text-base font-medium">{currencySymbol}{account.remainder.toFixed(2)}</p>
+										</div>
 									</div>
-								</div>
-							))}
-						</div>
-					) : (
-						<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
-							<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
-							<p className="text-gray-500 text-center">No accounts found.</p>
-						</div>
-					)}
+								))}
+							</div>
+						) : (
+							<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+								<h3 className="text-xl font-semibold mb-4">My Accounts</h3>
+								<p className="text-gray-500 text-center">No accounts found.</p>
+							</div>
+						)}
 
-					{/* This Month Category Chart */}
-					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">Spending by Category This Month</h2>
-						<CategoriesAcctsChart transactions={transactions} />
-					</div>
-					{/* Previous Months Category Chart */}
-					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Spending by Category</h2>
-						<CategoriesMonthsChart transactions={transactions} />
-					</div>
-				</div>
-			)}
+						{/* This Month Category Chart */}
+						<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+							<h2 className="text-lg font-semibold text-gray-800 mb-4">Spending by Category This Month</h2>
+							<CategoriesAcctsChart transactions={transactions} />
+						</div>
+						{/* Previous Months Category Chart */}
+						<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+							<h2 className="text-lg font-semibold text-gray-800 mb-4">Monthly Spending by Category</h2>
+							<CategoriesMonthsChart transactions={transactions} />
+						</div>
+					</div>)}
 
 			<div className="mt-6 flex flex-col lg:flex-row gap-6">
 				{/* Daily expenses per account chart */}
@@ -155,7 +157,7 @@ const Dashboard = () => {
 					<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 w-full lg:w-1/3 mb-6">
 						{/* Display recent transactions */}
 						<h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h2>
-						<ul className="space-y-4">
+						<ul className="space-y-3">
 							{recentTransactions.map((transaction) => (
 								<li key={transaction._id}
 									className="flex justify-between items-start p-2 rounded-md hover:bg-gray-100 transition-transform duration-200 hover:scale-[1.01]">
@@ -170,7 +172,7 @@ const Dashboard = () => {
 									</div>
 									<div className="text-right">
 										<div className={"text-base font-semibold"}>
-											{transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+											{transaction.type === 'income' ? '+' : '-'}{currencySymbol}{transaction.amount.toFixed(2)}
 										</div>
 										<div className="text-xs text-gray-500">
 											{new Date(transaction.date).toLocaleDateString('en-US', {
@@ -192,8 +194,14 @@ const Dashboard = () => {
 					</div>
 				)}
 			</div>
+			<div className="flex flex-col lg:flex-row gap-6 mt-6">
+				<Dashcoins />
 
-			<Dashcoins />
+				<div className="bg-white shadow-md rounded-xl p-6 border border-gray-200 flex-1">
+					<h2>News..</h2>
+				</div>
+			</div>
+			
 		</div>
 		
 		

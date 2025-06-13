@@ -7,7 +7,6 @@ import CategoriesChart from '../components/charts/CategoriesChart';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { usePreferences } from '../context/PreferencesContext';
-import { Plus } from 'lucide-react';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
