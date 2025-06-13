@@ -165,7 +165,7 @@ function Accounts() {
                 <div className="flex-shrink-0">
                     <button
                         onClick={() => openModal()}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap"
+                        className=" border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap"
                     >
                         Add New Account
                     </button>
@@ -183,7 +183,12 @@ function Accounts() {
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-lg font-semibold text-gray-800">{account.name}</h3>
                                         {/* Delete button */}
-                                        <button onClick={() => { setDeleteAccountId(account._id); setShowDeleteModal(true); }} className="text-gray-500 hover:text-red-700">
+                                        <button onClick={(e) => {
+                                                    e.preventDefault();      // Prevent navigation
+                                                    e.stopPropagation();     // Stop click from bubbling to Link
+                                                    setDeleteAccountId(account._id);
+                                                    setShowDeleteModal(true);
+                                                }} className="text-gray-500 hover:text-red-700">
                                             <Trash2 size={16} /> </button>
                                     </div>
                                     {/* Income, expense and remainder info */}
@@ -213,12 +218,14 @@ function Accounts() {
                         />
                         {formErrors.name && <p className="text-red-500 text-sm">{formErrors.name}</p>}
                     </div>
-                    <button
-                        type="submit"
-                        className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                    >
-                        Create Account
-                    </button>
+                    <div className="flex justify-end gap-4">
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition"
+                        >
+                            Create Account
+                        </button>
+                    </div>
                 </form>
             </Modal>
 

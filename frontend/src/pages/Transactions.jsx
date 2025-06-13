@@ -102,7 +102,7 @@ function Transactions() {
         if (selectedFilter === 'income' || selectedFilter === 'expense') {
             filteredResult = filteredResult.filter(transaction => transaction.type === selectedFilter);
         } 
-         if (selectedTagFilter) {
+        if (selectedTagFilter) {
         filteredResult = filteredResult.filter(transaction =>
             (transaction.tags || []).some(tag => tag.name.trim().toLowerCase() === selectedTagFilter.toLowerCase())
         );
@@ -158,7 +158,7 @@ function Transactions() {
                     },
                 }),
             ]);
-          
+        
             // Sort transactions by date
             const sortedTransactions = transactionsResponse.data.sort((a, b) => new Date(a.date) - new Date(b.date));
             
@@ -388,7 +388,7 @@ function Transactions() {
                     onChange={(e) => handleSearch(e.target.value)}/>
                 </div>
                 {/* Add button */}
-                <button onClick={() => openModal()} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
+                <button onClick={() => openModal()} className="border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
                     Add Transaction
                 </button>
             </div>
@@ -544,32 +544,37 @@ function Transactions() {
                             <span className="text-red-500 text-xs">{formErrors.category_id}</span>
                         )}
                     </div>
-                    <div className="flex flex-wrap gap-2 items-center">
-                    {formData.tags.map((tag, index) => (
-                        <span key={index} className="bg-gray-200 text-sm px-2 py-1 rounded-full flex items-center gap-1">
-                        #{typeof tag === 'object' && tag !== null ? tag.name : tag}
-                        <button
-                            type="button"
-                            onClick={() => removeTag(index)}
-                            className="text-red-500 hover:text-red-700 font-bold"
-                        >
-                            ×
-                        </button>
-                        </span>
-                    ))}
-                    <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        placeholder="Add tag and press Enter"
-                        className="border px-2 py-1 rounded"
-                    />
+                    <div className="mb-4">
+                        <label className="block mb-1 font-medium">Tags</label>
+                        <div className="flex flex-wrap gap-2 items-center rounded">
+                            {formData.tags.map((tag, index) => (
+                                <span key={index} className="bg-gray-200 text-sm px-2 py-1 rounded-full flex items-center gap-1">
+                                #{typeof tag === 'object' && tag !== null ? tag.name : tag}
+                                <button
+                                    type="button"
+                                    onClick={() => removeTag(index)}
+                                    className="text-red-500 hover:text-red-700 font-bold"
+                                >
+                                    ×
+                                </button>
+                                </span>
+                            ))}
+                            <input
+                                type="text"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={handleTagKeyDown}
+                                placeholder="Add tag and press Enter"
+                                className="border px-2 py-1 rounded outline-none flex-1 min-w-[150px]"
+                            />
+                        </div>
                     </div>
 
-                    <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading}>
-                    Save
-                    </button>
+                    <div className="flex justify-end">
+                        <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                        Save Transaction
+                        </button>
+                    </div>
                 </form>
             </Modal>
 
