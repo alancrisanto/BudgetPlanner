@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../components/Modal';
+import { useMemo } from 'react';
 import { usePreferences } from '../context/PreferencesContext';
 
 const VITE_API_URL = import.meta.env.VITE_API_URL
@@ -29,7 +30,8 @@ function Transactions() {
         date: '',
         name: '',
         amount: '',
-        category_id: ''
+        category_id: '',
+        tags: [],
     });
 
     const [editTransaction, setEditTransaction] = useState(null);
@@ -43,7 +45,11 @@ function Transactions() {
                 date: transaction.date.slice(0, 10),
                 name: transaction.name,
                 amount: transaction.amount,
-                category_id: transaction.category_id
+                category_id: typeof transaction.category_id === 'object' 
+                ? transaction.category_id._id 
+                : transaction.category_id,
+                tags: transaction.tags || [],
+
             });
         } else {
             setEditTransaction(null);
@@ -53,7 +59,8 @@ function Transactions() {
                 date: '',
                 name: '',
                 amount: '',
-                category_id: ''
+                category_id: '',
+                tags: [],
             });
         };
         setShowModal(true);
@@ -67,6 +74,24 @@ function Transactions() {
     const [selectedFilter, setSelectedFilter] = useState('');
     const [sortBy, setSortBy] = useState('');
 
+    //tags state
+    const [tagInput, setTagInput] = useState([]);
+    const [selectedTagFilter, setSelectedTagFilter] = useState('');
+
+    const allTags = useMemo(() => {
+    const tagSet = new Set();
+    transactions.forEach(tx => {
+        (tx.tags || []).forEach(tag => {
+            if(!tagSet.has(tag.name)){
+                tagSet.add(tag.name)
+            }
+            else{
+                return
+            }
+        })})
+        return Array.from(tagSet);
+    }, [transactions]);
+
     useEffect(() => {
         let filteredResult = [...transactions];
         // Filter transactions based on selected account
@@ -76,6 +101,11 @@ function Transactions() {
         // Filter transactions based on selected filter
         if (selectedFilter === 'income' || selectedFilter === 'expense') {
             filteredResult = filteredResult.filter(transaction => transaction.type === selectedFilter);
+        } 
+         if (selectedTagFilter) {
+        filteredResult = filteredResult.filter(transaction =>
+            (transaction.tags || []).some(tag => tag.name.trim().toLowerCase() === selectedTagFilter.toLowerCase())
+        );
         }
         // Sort transactions based on selected sort criteria
         filteredResult.sort((a, b) => {
@@ -88,8 +118,8 @@ function Transactions() {
             }
             return 0; // Default case, no sorting
         });
-        setFilteredTransactions(filteredResult);
-    }, [transactions, selectedAccount, selectedFilter, sortBy]);
+        setFilteredTransactions(filteredResult); 
+    }, [transactions, selectedAccount ,selectedFilter, sortBy, selectedTagFilter]); 
 
     // Handle search functionality
     const handleSearch = (searchTerm) => {
@@ -104,42 +134,43 @@ function Transactions() {
     // Fetch accounts, transactions and categories
     useEffect(() => {
         const fetchData = async () => {
-            if (!token) {
-                setError(new Error('User is not authenticated.'));
-                setLoading(false);
-                return;
-            }
-            try {
-                setLoading(true);
-                const [accountsResponse, transactionsResponse, categoriesResponse] = await Promise.all([
-                    axios.get(`${VITE_API_URL}/api/accounts`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-                    axios.get(`${VITE_API_URL}/api/transactions`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-                    axios.get(`${VITE_API_URL}/api/categories`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-                ]);
-                // Sort transactions by date
-                const sortedTransactions = transactionsResponse.data.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                setAccounts(accountsResponse.data);
-                setTransactions(sortedTransactions);
-                setCategories(categoriesResponse.data);
-            } catch (err) {
-                console.error('Error fetching data:', err);
-                setError(err);
-            } finally {
-                setLoading(false);
-            }
+        if (!token) {
+            setError(new Error('User is not authenticated.'));
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            const [accountsResponse, transactionsResponse, categoriesResponse] = await Promise.all([
+                axios.get(`${VITE_API_URL}/api/accounts`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                axios.get(`${VITE_API_URL}/api/transactions`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                axios.get(`${VITE_API_URL}/api/categories`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+            ]);
+          
+            // Sort transactions by date
+            const sortedTransactions = transactionsResponse.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            setAccounts(accountsResponse.data);
+            setTransactions(sortedTransactions);
+            setCategories(categoriesResponse.data);
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
         };
         // If token is available, fetch data
         if (token) {
@@ -166,12 +197,23 @@ function Transactions() {
         }
         setFormErrors({}); // Clear errors if no validation issues
         try {
-            // Prepare form data for submission
-            const formDataToSubmit = {
+            const cleanedTag = typeof tagInput === 'string' ? tagInput.trim() : '';;
+            let updatedTags = formData.tags;
+
+            if (cleanedTag && !formData.tags.includes(cleanedTag)) {
+                updatedTags = [...formData.tags, cleanedTag];
+                setFormData(prev => ({
+                    ...prev,
+                    tags: updatedTags
+                }));
+            }
+            let formDataToSubmit = {
                 ...formData,
                 account_id: formData.account_id,
                 amount: parseFloat(formData.amount),
+                tags: updatedTags.map(tag => typeof tag === 'object' ? tag.name : tag),
             };
+
             // If editing an existing transaction, update it; otherwise, create a new one
             if (editTransaction) {
                 // Update transaction
@@ -181,13 +223,27 @@ function Transactions() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? response.data : transaction));
+                let updatedTransaction = response.data;
+
+                // Ensure category_id and account_id are objects like in other transactions
+                const populatedCategory = categories.find(cat => cat._id === updatedTransaction.category_id);
+                const populatedAccount = accounts.find(acc => acc._id === updatedTransaction.account_id);
+
+                if (populatedCategory) {
+                    updatedTransaction.category_id = populatedCategory;
+                }
+                if (populatedAccount) {
+                    updatedTransaction.account_id = populatedAccount;
+                }
+
+                setTransactions(transactions.map(transaction => transaction._id === editTransaction._id ? updatedTransaction : transaction));
             } else {
                 // Create new transaction
                 const response = await axios.post(`${VITE_API_URL}/api/transactions`,
                     formDataToSubmit, {
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                 });
                 setTransactions([...transactions, response.data]);
@@ -198,8 +254,9 @@ function Transactions() {
                 type: '',
                 date: '',
                 name: '',
-                amount: '',
-                category_id: ''
+                amount: '', 
+                category_id: '',
+                tags: [],
             });
             setEditTransaction(null);
             closeModal();
@@ -238,14 +295,43 @@ function Transactions() {
     }
 
 
+    const handleTagKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const newTag = tagInput.trim();
+        if (newTag && !formData.tags.includes(newTag)) {
+            setFormData({ ...formData, tags: [...formData.tags, newTag] });
+        }
+        setTagInput('');
+    }
+    };
 
+    const removeTag = (index) => {
+        const updatedTags = formData.tags.filter((_, i) => i !== index);
+        setFormData({ ...formData, tags: updatedTags });
+    };
     return (
+      <>
+                    <title>Transactions | Budget Planner</title>
+                    <meta name="description" content="View and manage all your transactions in one convenient place — categorized and searchable." />
+                    <meta name="keywords" content="transactions, budget records, expenses, income entries, transaction log" />
+                    <meta name="author" content="Veihi Joy Tupai,  Cameron Pedro, Rama Krishna Bhagi Perez, Bamutesiza Ronald" />
+
+                    <meta property="og:title" content="BudgetPlanner | Transactions" />
+                    <meta property="og:description" content="Browse all your financial transactions with ease." />
+                    <meta property="og:url" content="" />
+                    <meta property="og:image" content="" />
+
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content="BudgetPlanner | Transactions" />
+                    <meta name="twitter:description" content="Search, filter, and analyze your past transactions." />
+                    <meta name="twitter:image" content="" />
         <div className="p-6">
             <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 {/* Filter by account */}
                 <div className="flex items-center gap-2">
-                    <label htmlFor="account" className="text-sm font-medium text-gray-700">Account</label>
+                    <label htmlFor="account" className="text-sm font-medium text-gray-700">Account:</label>
                     <select id="account" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
                         value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)}>
                         <option value="all">All</option>
@@ -270,7 +356,7 @@ function Transactions() {
                 <div className="flex items-center gap-2">
                     <label htmlFor="sort" className="text-sm font-medium text-gray-700">Sort by:</label>
                     <select id="sort" className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                        value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                         <option value="">None</option>
                         <option value="date">Date</option>
                         <option value="amount">Amount</option>
@@ -278,13 +364,29 @@ function Transactions() {
                     </select>
                 </div>
 
+                {/**filter by tag */}
+                <div className="flex items-center gap-2">
+                    <label htmlFor="tagFilter" className="text-sm font-medium text-gray-700">
+                        Tag:
+                    </label>
+                    <select
+                        id="tagFilter"
+                        value={selectedTagFilter}
+                        onChange={(e) => setSelectedTagFilter(e.target.value)}
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    >
+                        <option value="">All</option>
+                        {allTags.map((tag, idx) => (
+                            <option key={idx} value={tag}>{tag.charAt(0).toUpperCase() + tag.slice(1)}</option>
+                        ))}
+                    </select>
+                </div>       
                 {/* Search */}
                 <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
                     <label htmlFor="search" className="text-sm font-medium text-gray-700">Search:</label>
                     <input type="text" id="search" placeholder="Search transactions..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                        onChange={(e) => handleSearch(e.target.value)} />
+                    onChange={(e) => handleSearch(e.target.value)}/>
                 </div>
-
                 {/* Add button */}
                 <button onClick={() => openModal()} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
                     Add Transaction
@@ -303,7 +405,7 @@ function Transactions() {
                         <div className="space-y-4">
                             {filteredTransactions.map(transaction => {
                                 const matchedCategory = categories.find(
-                                    category => String(category._id) === String(transaction.category_id._id)
+                                category => String(category._id) === String(transaction.category_id._id || transaction.category_id)
                                 );
                                 // Determine the arrow direction and color based on transaction type
                                 const isIncome = transaction.type === 'income';
@@ -311,14 +413,14 @@ function Transactions() {
                                 const arrow = isIncome ? '↑' : '↓';
                                 // Format the date
                                 const formattedDate = new Date(transaction.date).toLocaleDateString('en-US', {
-                                    timezone: 'UTC',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
+                                timezone: 'UTC',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
                                 });
 
                                 return (
-                                    <div key={transaction._id} className="flex justify-between items-start p-4 bg-white hover:bg-gray-100 rounded-2xl shadow-md">
+                                    <div key={transaction._id} className="flex justify-between items-start p-4 bg-white rounded-2xl shadow-md">
                                         {/* Left arrow icon */}
                                         <div className="flex flex-col items-center mr-4">
                                             <div className={`text-2xl font-bold ${arrowColor}`}>{arrow}</div>
@@ -329,6 +431,21 @@ function Transactions() {
                                             <div className="text-sm text-gray-500">{matchedCategory?.name || 'Uncategorized'}</div>
                                             <div className="text-sm text-gray-500">{transaction.account_id?.name || "No account"}</div>
                                         </div>
+                                        {/**tags display */}
+
+                                        {/* Tags */}
+                                        {transaction.tags && transaction.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {transaction.tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-100 text-xs text-gray-700 px-2 py-1 rounded-full"
+                                            >
+                                                #{typeof tag === 'object' ? tag.name : tag}
+                                            </span>
+                                            ))}
+                                        </div>
+                                        )}
                                         {/* Amount and date */}
                                         <div className="flex items-center gap-4 pl-4">
                                             <div className="text-right">
@@ -358,10 +475,10 @@ function Transactions() {
             {/* Modal for adding/editing transactions */}
             <Modal isOpen={showModal} onClose={closeModal} title={editTransaction ? "Edit Transaction" : "Add Transaction"}>
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
+                    <div className="mb-4" >
                         <label className="block mb-1 font-medium">Account</label>
                         <select className="w-full border border-gray-300 rounded p-2"
-                            value={formData.account_id} onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
+                            value={formData.account_id} onChange={(e) => setFormData({...formData, account_id:e.target.value})}
                             required>
                             <option value="">Select Account</option>
                             {accounts.map(account => (
@@ -375,7 +492,7 @@ function Transactions() {
                     <div className="mb-4">
                         <label className="block mb-1 font-medium">Type</label>
                         <select className="w-full border border-gray-300 rounded p-2"
-                            value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            value={formData.type} onChange={(e) => setFormData({...formData, type:e.target.value})}
                             required>
                             <option value="expense">Expense</option>
                             <option value="income">Income</option>
@@ -386,18 +503,18 @@ function Transactions() {
                     </div>
                     <div className="mb-4">
                         <label className="block mb-1 font-medium">Date</label>
-                        <input className="w-full border border-gray-300 rounded p-2" type="date"
-                            value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                            required />
+                        <input className="w-full border border-gray-300 rounded p-2" type="date" 
+                            value={formData.date} onChange={(e) => setFormData({...formData, date:e.target.value})}
+                            required/>
                         {formErrors.date && (
                             <span className="text-red-500 text-xs">{formErrors.date}</span>
                         )}
                     </div>
                     <div className="mb-4">
                         <label className="block mb-1 font-medium">Name</label>
-                        <input className="w-full border border-gray-300 rounded p-2" type="text"
-                            value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required />
+                        <input className="w-full border border-gray-300 rounded p-2" type="text" 
+                            value={formData.name} onChange={(e) => setFormData({...formData, name:e.target.value})}
+                            required/>
                         {formErrors.name && (
                             <span className="text-red-500 text-xs">{formErrors.name}</span>
                         )}
@@ -405,8 +522,8 @@ function Transactions() {
                     <div className="mb-4">
                         <label className="block mb-1 font-medium">Amount</label>
                         <input className="w-full border border-gray-300 rounded p-2"
-                            value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} type="number" step="0.01"
-                            required />
+                            value={formData.amount} onChange={(e) => setFormData({...formData, amount:e.target.value})} type="number" step="0.01" 
+                            required/>
                         {formErrors.amount && (
                             <span className="text-red-500 text-xs">{formErrors.amount}</span>
                         )}
@@ -418,16 +535,40 @@ function Transactions() {
                             onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                             required>
                             <option value="">Select Category</option>
-                            {categories.map(category => (
-                                <option key={category._id} value={category._id}>{category.name}</option>
-                            ))}
+                                {categories.map(category => (
+                                <option key={category._id} value={category._id}>{category.name}</option>        
+                            
+                                ))}
                         </select>
                         {formErrors.category_id && (
                             <span className="text-red-500 text-xs">{formErrors.category_id}</span>
                         )}
                     </div>
+                    <div className="flex flex-wrap gap-2 items-center">
+                    {formData.tags.map((tag, index) => (
+                        <span key={index} className="bg-gray-200 text-sm px-2 py-1 rounded-full flex items-center gap-1">
+                        #{typeof tag === 'object' && tag !== null ? tag.name : tag}
+                        <button
+                            type="button"
+                            onClick={() => removeTag(index)}
+                            className="text-red-500 hover:text-red-700 font-bold"
+                        >
+                            ×
+                        </button>
+                        </span>
+                    ))}
+                    <input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
+                        placeholder="Add tag and press Enter"
+                        className="border px-2 py-1 rounded"
+                    />
+                    </div>
+
                     <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded" disabled={loading}>
-                        Save
+                    Save
                     </button>
                 </form>
             </Modal>
@@ -444,6 +585,7 @@ function Transactions() {
                 </div>
             </Modal>
         </div>
+        </>
     );
 }
 

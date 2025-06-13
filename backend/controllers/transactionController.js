@@ -1,5 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Account = require('../models/Account');
+const Tag = require('../models/Tag');
+const Category = require('../models/Category');
 const mongoose = require('mongoose');
 
 exports.getTransactionsByAccount = async (req, res) => {
@@ -40,8 +42,9 @@ exports.getTransactions = async (req, res) => {
 
 
 exports.createTransaction = async (req, res) => {
+    console.log('Full request body:', req.body);
     try {
-        const {
+        let {
             account_id,
             type,
             amount,
@@ -55,6 +58,19 @@ exports.createTransaction = async (req, res) => {
             end_date
         } = req.body;
 
+        const tagIds = [];
+
+        for (const tagName of tags) {
+            const trimmedName = tagName.trim().toLowerCase(); // normalize tag
+            let tag = await Tag.findOne({ name: trimmedName });
+
+            if (!tag) {
+                tag = await Tag.create({ name: trimmedName });
+            }
+
+            tagIds.push(tag._id);
+        }
+      
         const newTransaction = await Transaction.create({
             account_id,
             type,
@@ -62,7 +78,7 @@ exports.createTransaction = async (req, res) => {
             date,
             category_id,
             name,
-            tags,
+            tags: tagIds,
             recurring,
             frequency,
             next_date,
@@ -83,7 +99,7 @@ exports.createTransaction = async (req, res) => {
         account.remainder = account.income_total - account.expense_total;
         await account.save();
 
-        // ✅ Safely populate by re-querying
+        // Safely populate by re-querying
         const populatedTransaction = await Transaction.findById(newTransaction._id)
             .populate('account_id category_id tags');
 
@@ -159,7 +175,17 @@ exports.updateTransaction = async (req, res) => {
         transaction.date = date;
         transaction.category_id = category_id;
         transaction.name = name;
-        transaction.tags = tags;
+
+        const tagIds = [];
+        for (const tagName of tags) {
+            const trimmed = (typeof tagName === 'object' ? tagName.name : tagName).trim().toLowerCase();
+            let tag = await Tag.findOne({ name: trimmed });
+            if (!tag) {
+                tag = await Tag.create({ name: trimmed });
+            }
+            tagIds.push(tag._id);
+            }
+        transaction.tags = tagIds;
         transaction.recurring = recurring;
         transaction.frequency = frequency;
         transaction.next_date = next_date;

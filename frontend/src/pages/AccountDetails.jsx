@@ -166,9 +166,11 @@ function AccountDetails() {
                     </div>
 
                     <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+                        {/* Account Summary */}
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-gray-800">Account Summary</h2>
                             <div className="flex items-center space-x-2">
+                                {/* Edit and Delete buttons */}
                                 <button onClick={() => setShowEditModal(true)} className="hover:text-blue-700">
                                     <Pencil size={16} />
                                 </button>
@@ -177,6 +179,7 @@ function AccountDetails() {
                                 </button>
                             </div>
                         </div>
+                        {/* Total income, total expenses and remainder */}
                         <div className="space-y-2 text-sm md:text-base text-gray-700">
                             <div className="flex justify-between">
                                 <span className="font-medium text-gray-800">Total Income</span>
@@ -194,9 +197,10 @@ function AccountDetails() {
                         </div>
                     </div>
 
+                    {/* Charts */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Expenses and Income</h2>
+                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Cumulative Expense and Income</h2>
                             <ExpenseIncomeChart transactions={transactions} />
                         </div>
                         <div className="bg-white shadow-md rounded-xl p-6 border border-gray-200">
