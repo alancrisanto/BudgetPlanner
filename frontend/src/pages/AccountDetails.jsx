@@ -18,19 +18,26 @@ function AccountDetails() {
     const [account, setAccount] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
     const [transactions, setTransactions] = useState([]);
     const { currencySymbol } = usePreferences();
+    const [categories, setCategories] = useState([]);
+    const [tagInput, setTagInput] = useState('');
+    const [formTags, setFormTags] = useState([]);
+    
     const [showModal, setShowModal] = useState(false);
+    
     const [formData, setFormData] = useState({
         account_id: id,
         type: '',
         date: '',
         name: '',
         amount: '',
-        category_id: ''
+        category_id: '',
+        tag_id: ''
     });
     const [formErrors, setFormErrors] = useState({});
-    const [categories, setCategories] = useState([]);
+    
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -78,6 +85,21 @@ function AccountDetails() {
         fetchCategories();
 
     }, [id, user.token, isAuthenticated]);
+
+    const handleTagInputChange = (e) => {
+        if (e.key === 'Enter' && tagInput.trim() !== '') {
+            e.preventDefault();
+            if (!formTags.some(tag => tag === tagInput.trim())) {
+                setFormTags([...formTags, tagInput.trim()]);
+            }
+            setTagInput('');
+        } 
+    };
+
+    const removeTag = (indexTag) => {
+        setFormTags(formTags.filter((_, index) => index !== indexTag));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = {};
@@ -97,6 +119,7 @@ function AccountDetails() {
                 ...formData,
                 amount: parseFloat(formData.amount),
                 account_id: id,
+                tags: formTags
             }, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
@@ -108,8 +131,10 @@ function AccountDetails() {
                 date: '',
                 name: '',
                 amount: '',
-                category_id: ''
+                category_id: '',
+                tag_id: ''
             });
+            setFormTags([]);
             setShowModal(false);
         } catch (err) {
             console.error('Error submitting transaction:', err);
@@ -160,7 +185,7 @@ function AccountDetails() {
                         <h1 className="text-2xl font-semibold text-gray-800">{account.name}</h1>
                     </div>
                     <div className="flex justify-end">
-                        <button onClick={() => setShowModal(true)} className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
+                        <button onClick={() => setShowModal(true)} className="border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md px-4 py-2 whitespace-nowrap">
                             Add Transaction
                         </button>
                     </div>
@@ -215,13 +240,27 @@ function AccountDetails() {
                             <ul className="space-y-4">
                                 {transactions.map((transaction) => (
                                     <li key={transaction._id} className="flex justify-between items-start p-3 rounded-md hover:bg-gray-100 transition-transform duration-200 hover:scale-[1.01]">
-                                        <div>
+                                        <div className="flex-1">
                                             <span className="font-medium text-gray-800">{transaction.name}</span>
                                             <div className="text-sm text-gray-600">{transaction.category_id?.name || 'No category'}</div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-base font-semibold text-gray-900">{(transaction.type === 'income' ? '+' : '-')}{currencySymbol}{transaction.amount.toFixed(2)}</div>
-                                            <div className="text-xs text-gray-500">{new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                        {transaction.tags && transaction.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {transaction.tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-100 text-xs text-gray-700 px-2 py-1 rounded-full"
+                                            >
+                                                #{typeof tag === 'object' ? tag.name : tag}
+                                            </span>
+                                            ))}
+                                        </div>
+                                        )}
+                                        <div className="flex items-center gap-4 pl-4">
+                                            <div className="text-right">
+                                                <div className="text-base font-semibold text-gray-900">{(transaction.type === 'income' ? '+' : '-')}{currencySymbol}{transaction.amount.toFixed(2)}</div>
+                                                <div className="text-xs text-gray-500">{new Date(transaction.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                            </div>
                                         </div>
                                     </li>
                                 ))}
@@ -239,10 +278,9 @@ function AccountDetails() {
 
             <Modal isOpen={showEditModal} onClose={closeEditModal} title="Edit Account Name">
                 <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700">Account Name</label>
                     <input type="text" value={account?.name || ''} onChange={(e) => setAccount({ ...account, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     <div className="flex justify-end gap-4">
-                        <button onClick={handleEdit} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save</button>
+                        <button onClick={handleEdit} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Save</button>
                     </div>
                 </div>
             </Modal>
@@ -310,6 +348,32 @@ function AccountDetails() {
                             ))}
                         </select>
                         {formErrors.category_id && <p className="text-red-500 text-xs">{formErrors.category_id}</p>}
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block mb-1 font-medium">Tags</label>
+                        <div className="flex flex-wrap gap-2 items-center rounded">
+                            {formTags.map((tag, index) => (
+                                <span key={index} className="bg-gray-200 text-sm px-2 py-1 rounded-full flex items-center gap-1">
+                                    #{tag}
+                                    <button
+                                        type="button"
+                                        onClick={() => removeTag(index)}
+                                        className="text-red-500 hover:text-red-700 font-bold"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                            <input
+                                type="text"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={handleTagInputChange}
+                                placeholder="Add tag and press Enter"
+                                className="border px-2 py-1 rounded outline-none flex-1 min-w-[150px]"
+                            />
+                        </div>
                     </div>
 
                     <div className="flex justify-end">

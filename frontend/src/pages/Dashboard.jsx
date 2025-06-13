@@ -72,7 +72,7 @@ const Dashboard = () => {
 	return (
 		<>
 		<div className="grid grid-cols-1 gap-6 p-6 max-w-7xl mx-auto">
-        	<title>DashBoard | Budget Planner</title>
+        <title>DashBoard | Budget Planner</title>
 				<meta name="description" content="View your financial overview — track income, expenses, savings, and budget performance in one place." />
 				<meta name="keywords" content="financial dashboard, budget summary, expense overview, income tracking" />
 				<meta name="author" content="Veihi Joy Tupai,  Cameron Pedro, _Rama Krishna Bhagi Perez, Bamutesiza Ronald" />
@@ -182,6 +182,18 @@ const Dashboard = () => {
 												day: 'numeric',
 											})}
 										</div>
+										{transaction.tags && transaction.tags.length > 0 && (
+                                        <div className="text-right">
+                                            {transaction.tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-100 text-xs text-gray-700 px-2 py-1 rounded-full"
+                                            >
+                                                #{typeof tag === 'object' ? tag.name : tag}
+                                            </span>
+                                            ))}
+                                        </div>
+                                        )}
 									</div>
 								</li>
 							))}
