@@ -6,6 +6,7 @@ import CategoriesAcctsChart from "../components/charts/CategoriesAcctsChart";
 import CategoriesMonthsChart from "../components/charts/CategoriesMonthsChart";
 import { usePreferences } from "../context/PreferencesContext";
 import CurrencyConverter from "../components/CurrencyConverter";
+import NewsCard from "../components/NewsCard";
 
 const VITE_API_URL = import.meta.env.VITE_API_URL;
 
@@ -271,10 +272,11 @@ const Dashboard = () => {
           )}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <Dashcoins />
-          <div>
+          <div className="flex flex-col gap-6">
+            <Dashcoins />
             <CurrencyConverter />
           </div>
+            <NewsCard />
         </div>
       </div>
     </>

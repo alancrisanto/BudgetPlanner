@@ -76,7 +76,7 @@ export default function CurrencyConverter() {
   };
 
   return (
-    <main className="bg-white p-6 rounded-xl w-full max-w-md shadow-md relative">
+    <main className="bg-white p-6 w-full max-w-md shadow-md rounded-xl border border-gray-200 relative">
       <h1 className="text-center text-indigo-600 text-xl uppercase font-semibold mb-6">
         Currency Converter
       </h1>
