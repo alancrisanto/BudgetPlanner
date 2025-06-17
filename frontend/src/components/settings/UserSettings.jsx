@@ -32,6 +32,19 @@ export default function UserSettings() {
                 setFirstName(res.data.firstName);
                 setLastName(res.data.lastName);
                 setCurrencySymbol(res.data.preferences?.currencySymbol || '$');
+
+                // Save fresh info to localStorage
+                const updatedUser = {
+                    token: user.token,
+                    email: res.data.email,
+                    username: res.data.username,
+                    firstName: res.data.firstName,
+                    lastName: res.data.lastName,
+                    preferences: res.data.preferences || {},
+                };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+
+
             } catch {
                 setMessage('Failed to load profile');
             }
@@ -50,6 +63,11 @@ export default function UserSettings() {
             setMessage(res.data.message);
             setEditProfile(false);
             await fetchPreferences(); // refresh the context
+
+            // Update localStorage with new profile info
+            const updatedUser = { ...user, username, firstName, lastName };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+
 
         } catch (err) {
             setMessage(err.response?.data?.error || 'Failed to update profile');
@@ -119,10 +137,11 @@ export default function UserSettings() {
                     {!editProfile && (
                         <button
                             onClick={() => setEditProfile(true)}
-                            className="text-sm text-blue-600 hover:underline"
+                            className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 hover:cursor-pointer"
                         >
                             Edit
                         </button>
+
                     )}
                 </div>
 
@@ -219,7 +238,12 @@ export default function UserSettings() {
             <div className="bg-white  shadow p-4 rounded mb-6">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-lg">Email</h3>
-                    <button onClick={() => setView('email')} className="text-sm text-blue-600 hover:underline">Change Email</button>
+                    <button
+                        onClick={() => setView('email')}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 hover:cursor-pointer"
+                    >
+                        Change Email
+                    </button>
                 </div>
                 <p className="text-gray-700">{email}</p>
                 {view === 'email' && (
@@ -237,7 +261,12 @@ export default function UserSettings() {
             <div className="bg-white shadow p-4 rounded mb-6">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-lg">Password</h3>
-                    <button onClick={() => setView('password')} className="text-sm text-blue-600 hover:underline">Change Password</button>
+                    <button
+                        onClick={() => setView('password')}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 hover:cursor-pointer"
+                    >
+                        Change Password
+                    </button>
                 </div>
                 {view === 'password' && (
                     <form onSubmit={handlePasswordSubmit} className="space-y-3">
