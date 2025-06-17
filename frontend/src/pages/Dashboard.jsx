@@ -26,6 +26,35 @@ const Dashboard = () => {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`${VITE_API_URL}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+
+        const updatedUser = {
+          token: user.token,
+          email: data.email,
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          preferences: data.preferences || {},
+        };
+
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser); // <-- also update React state
+      } catch (err) {
+        setError(err.message);
+        console.error(err);
+      }
+    };
+
+
+    fetchProfile();
     const fetchData = async () => {
       try {
         // Fetch accounts data
@@ -116,7 +145,7 @@ const Dashboard = () => {
             Welcome back{" "}
             <strong className="text-indigo-600">
               {" "}
-              {user ? user.user.firstName : "User"}{" "}
+              {user ? user.firstName : "User"}{" "}
             </strong>
           </h2>
           <img
@@ -276,7 +305,7 @@ const Dashboard = () => {
             <Dashcoins />
             <CurrencyConverter />
           </div>
-            <NewsCard />
+          <NewsCard />
         </div>
       </div>
     </>
