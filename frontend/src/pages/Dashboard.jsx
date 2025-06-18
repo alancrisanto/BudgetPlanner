@@ -300,13 +300,18 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 gap-6 mt-6">
+          {/* Row with Dashcoins and CurrencyConverter side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Dashcoins />
             <CurrencyConverter />
           </div>
-          <NewsCard />
+
+          {/* NewsCard below, full width */}
+          {/*<NewsCard />*/}
         </div>
+
+
       </div>
     </>
   );
